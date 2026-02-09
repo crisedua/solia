@@ -15,6 +15,7 @@ dist-ssr
 # Environment & secrets
 .env
 .env.*
+!.env.example
 server/tokens*.json
 server/share-links.json
 
