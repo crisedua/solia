@@ -1,20 +1,23 @@
-const { getClient } = require('../lib/store');
+import { getClient } from '../lib/store.js';
 
-module.exports = (req, res) => {
-  const { clientId } = req.query;
-  const client = getClient(clientId);
+export default function handler(req, res) {
+  try {
+    const { clientId } = req.query;
+    const client = getClient(clientId);
 
-  if (!client) {
-    return res.status(404).json({ error: 'Client not found' });
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    res.json({
+      id: client.id,
+      name: client.name,
+      business: client.business,
+      calendarConnected: client.calendarConnected,
+      connectedEmail: client.connectedEmail,
+    });
+  } catch (err) {
+    console.error('Error in /api/clients/[clientId]:', err);
+    res.status(500).json({ error: err.message });
   }
-
-  // Return safe public info (no tokens)
-  res.json({
-    id: client.id,
-    name: client.name,
-    business: client.business,
-    calendarConnected: client.calendarConnected,
-    gmailConnected: client.gmailConnected,
-    connectedEmail: client.connectedEmail,
-  });
-};
+}

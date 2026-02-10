@@ -1,25 +1,25 @@
-const { google } = require('googleapis');
-const { getClient } = require('../../lib/store');
-const { createOAuth2Client } = require('../../lib/google');
+import { google } from 'googleapis';
+import { getClient } from '../../lib/store.js';
+import { createOAuth2Client } from '../../lib/google.js';
 
-module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { clientId } = req.query;
-  const { date, time, caller_name, caller_email, caller_phone } = req.body;
-
-  if (!date || !time) {
-    return res.status(400).json({ error: 'date and time are required' });
-  }
-
-  const client = getClient(clientId);
-  if (!client || !client.tokens) {
-    return res.status(404).json({ error: 'Client not found or not connected' });
-  }
-
+export default async function handler(req, res) {
   try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const { clientId } = req.query;
+    const { date, time, caller_name, caller_email, caller_phone } = req.body;
+
+    if (!date || !time) {
+      return res.status(400).json({ error: 'date and time are required' });
+    }
+
+    const client = getClient(clientId);
+    if (!client || !client.tokens) {
+      return res.status(404).json({ error: 'Client not found or not connected' });
+    }
+
     const oauth2Client = createOAuth2Client();
     oauth2Client.setCredentials(client.tokens);
 
@@ -50,4 +50,4 @@ module.exports = async (req, res) => {
     console.error('Schedule error:', error.message);
     res.status(500).json({ error: 'Failed to schedule appointment' });
   }
-};
+}

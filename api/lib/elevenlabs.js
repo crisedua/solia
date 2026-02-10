@@ -1,4 +1,4 @@
-const https = require('https');
+import https from 'https';
 
 function apiCall(method, path, body) {
   return new Promise((resolve, reject) => {
@@ -31,14 +31,7 @@ function apiCall(method, path, body) {
   });
 }
 
-/**
- * Creates an ElevenLabs conversational agent for a specific client.
- * The agent's tools point back to our API with the clientId,
- * so when the agent calls checkAvailability, it hits:
- *   POST /api/calendar/{clientId}/check-availability
- * and our backend uses THAT client's Google tokens.
- */
-async function createAgentForClient(clientId, client, baseApiUrl) {
+export async function createAgentForClient(clientId, client, baseApiUrl) {
   const agentConfig = {
     name: `${client.business} - Voice Agent`,
     conversation_config: {
@@ -103,4 +96,4 @@ Contact: ${client.name}`,
   return null;
 }
 
-module.exports = { createAgentForClient, apiCall };
+export { apiCall };

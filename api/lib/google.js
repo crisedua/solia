@@ -1,4 +1,4 @@
-const { google } = require('googleapis');
+import { google } from 'googleapis';
 
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar',
@@ -15,4 +15,4 @@ function createOAuth2Client() {
   );
 }
 
-module.exports = { createOAuth2Client, SCOPES };
+export { createOAuth2Client, SCOPES };

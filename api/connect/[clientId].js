@@ -1,21 +1,26 @@
-const { getClient } = require('../lib/store');
-const { createOAuth2Client, SCOPES } = require('../lib/google');
+import { getClient } from '../lib/store.js';
+import { createOAuth2Client, SCOPES } from '../lib/google.js';
 
-module.exports = (req, res) => {
-  const { clientId } = req.query;
-  const client = getClient(clientId);
+export default function handler(req, res) {
+  try {
+    const { clientId } = req.query;
+    const client = getClient(clientId);
 
-  if (!client) {
-    return res.status(404).send('Invalid link');
+    if (!client) {
+      return res.status(404).send('Invalid link');
+    }
+
+    const oauth2Client = createOAuth2Client();
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES,
+      state: JSON.stringify({ clientId }),
+      prompt: 'consent',
+    });
+
+    res.redirect(authUrl);
+  } catch (err) {
+    console.error('Error in /api/connect:', err);
+    res.status(500).send('Error starting authentication');
   }
-
-  const oauth2Client = createOAuth2Client();
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: SCOPES,
-    state: JSON.stringify({ clientId }),
-    prompt: 'consent',
-  });
-
-  res.redirect(authUrl);
-};
+}

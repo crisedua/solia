@@ -1,9 +1,9 @@
-const { google } = require('googleapis');
-const { createOAuth2Client } = require('./lib/google');
-const { upsertClient, getClient } = require('./lib/store');
-const { createAgentForClient } = require('./lib/elevenlabs');
+import { google } from 'googleapis';
+import { createOAuth2Client } from './lib/google.js';
+import { upsertClient, getClient } from './lib/store.js';
+import { createAgentForClient } from './lib/elevenlabs.js';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const { code, state } = req.query;
   let stateData = {};
   try {
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
       calendarConnected: true,
     });
 
-    // Create an ElevenLabs agent for this client (async, don't block redirect)
+    // Create an ElevenLabs agent for this client
     const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
     createAgentForClient(clientId, client, baseApiUrl).then((agentId) => {
       if (agentId) {
@@ -58,4 +58,4 @@ module.exports = async (req, res) => {
     console.error('OAuth error:', error);
     res.status(500).send('Authentication failed. Please try again.');
   }
-};
+}
