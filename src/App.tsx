@@ -7,7 +7,6 @@ import GridFeatures from './components/GridFeatures';
 import Security from './components/Security';
 import Footer from './components/Footer';
 import ConnectCalendar from './components/ConnectCalendar';
-import VoiceAgent from './components/VoiceAgent';
 
 function App() {
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -22,7 +21,6 @@ function App() {
       <Security />
       <Footer />
       <ConnectCalendar open={calendarOpen} onClose={() => setCalendarOpen(false)} />
-      <VoiceAgent />
     </div>
   );
 }
