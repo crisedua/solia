@@ -18,6 +18,7 @@ module.exports = (req, res) => {
     connectedEmail: c.connectedEmail,
     connectedAt: c.connectedAt,
     createdAt: c.createdAt,
+    agentId: c.agentId || null,
   }));
 
   res.json(list);
