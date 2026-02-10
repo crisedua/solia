@@ -1,10 +1,6 @@
 const { google } = require('googleapis');
-
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
-);
+const { createOAuth2Client } = require('./lib/google');
+const { upsertClient, getClient } = require('./lib/store');
 
 module.exports = async (req, res) => {
   const { code, state } = req.query;
@@ -13,9 +9,20 @@ module.exports = async (req, res) => {
     stateData = JSON.parse(state || '{}');
   } catch (_) {}
 
+  const clientId = stateData.clientId;
+  if (!clientId) {
+    return res.status(400).send('Missing client identifier');
+  }
+
+  const client = getClient(clientId);
+  if (!client) {
+    return res.status(404).send('Client not found');
+  }
+
   try {
+    const oauth2Client = createOAuth2Client();
     const { tokens } = await oauth2Client.getToken(code);
-    
+
     // Get user email
     oauth2Client.setCredentials(tokens);
     const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
@@ -25,18 +32,19 @@ module.exports = async (req, res) => {
       email = userInfo.data.email || 'unknown';
     } catch (_) {}
 
-    if (stateData.type === 'shared' && stateData.linkId) {
-      // For shared links, we'll store in Vercel KV or similar
-      // For now, redirect to success page with linkId
-      const baseUrl = process.env.APP_BASE_URL || 'https://solia.vercel.app';
-      return res.redirect(`${baseUrl}/connections/${stateData.linkId}/success?email=${encodeURIComponent(email)}`);
-    }
+    // Update client record with tokens
+    upsertClient(clientId, {
+      tokens,
+      connectedEmail: email,
+      connectedAt: Date.now(),
+      calendarConnected: true,
+      gmailConnected: true,
+    });
 
-    // Owner flow
-    const baseUrl = process.env.APP_BASE_URL || 'https://solia.vercel.app';
-    res.redirect(`${baseUrl}/oauth/success?email=${encodeURIComponent(email)}`);
+    const baseUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
+    res.redirect(`${baseUrl}/onboard/${clientId}/success?email=${encodeURIComponent(email)}`);
   } catch (error) {
-    console.error('Error retrieving access token', error);
-    res.status(500).send('Error during authentication');
+    console.error('OAuth error:', error);
+    res.status(500).send('Authentication failed. Please try again.');
   }
 };

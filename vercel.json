@@ -5,18 +5,6 @@
       "destination": "/api/:path*"
     },
     {
-      "source": "/auth",
-      "destination": "/api/auth"
-    },
-    {
-      "source": "/auth/connect/:linkId",
-      "destination": "/api/auth/connect/:linkId"
-    },
-    {
-      "source": "/oauth2callback",
-      "destination": "/api/oauth2callback"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
