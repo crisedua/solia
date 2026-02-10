@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const { createOAuth2Client } = require('./lib/google');
 const { upsertClient, getClient } = require('./lib/store');
+const { createAgentForClient } = require('./lib/elevenlabs');
 
 module.exports = async (req, res) => {
   const { code, state } = req.query;
@@ -32,13 +33,23 @@ module.exports = async (req, res) => {
       email = userInfo.data.email || 'unknown';
     } catch (_) {}
 
-    // Update client record with tokens
+    // Save tokens linked to this client
     upsertClient(clientId, {
       tokens,
       connectedEmail: email,
       connectedAt: Date.now(),
       calendarConnected: true,
-      gmailConnected: true,
+    });
+
+    // Create an ElevenLabs agent for this client (async, don't block redirect)
+    const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
+    createAgentForClient(clientId, client, baseApiUrl).then((agentId) => {
+      if (agentId) {
+        upsertClient(clientId, { agentId });
+        console.log(`Agent ${agentId} created for client ${clientId}`);
+      }
+    }).catch((err) => {
+      console.error('Failed to create agent for client:', err);
     });
 
     const baseUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
