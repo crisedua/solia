@@ -1,32 +1,90 @@
-import fs from 'fs';
+import { createClient } from '@supabase/supabase-js';
 
-const STORE_PATH = '/tmp/solia-clients.json';
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
 
-export function loadClients() {
-  try {
-    if (fs.existsSync(STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(STORE_PATH, 'utf-8'));
-    }
-  } catch (_) {}
-  return {};
+export async function getClient(clientId) {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('id', clientId)
+    .single();
+
+  if (error || !data) return null;
+  return toAppFormat(data);
 }
 
-export function saveClients(clients) {
-  fs.writeFileSync(STORE_PATH, JSON.stringify(clients, null, 2));
+export async function upsertClient(clientId, updates) {
+  const existing = await getClient(clientId);
+  const merged = { ...existing, ...updates };
+
+  const row = toDbFormat(merged);
+  row.id = clientId;
+
+  const { data, error } = await supabase
+    .from('clients')
+    .upsert(row, { onConflict: 'id' })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Supabase upsert error:', error);
+    throw error;
+  }
+  return toAppFormat(data);
 }
 
-export function getClient(clientId) {
-  const clients = loadClients();
-  return clients[clientId] || null;
+export async function getAllClients() {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Supabase list error:', error);
+    return {};
+  }
+
+  const clients = {};
+  for (const row of data || []) {
+    clients[row.id] = toAppFormat(row);
+  }
+  return clients;
 }
 
-export function upsertClient(clientId, data) {
-  const clients = loadClients();
-  clients[clientId] = { ...clients[clientId], ...data };
-  saveClients(clients);
-  return clients[clientId];
+// Convert DB snake_case to app camelCase
+function toAppFormat(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    business: row.business,
+    email: row.email || '',
+    phone: row.phone || '',
+    agentId: row.agent_id,
+    calendarConnected: row.calendar_connected || false,
+    tokens: row.tokens,
+    connectedEmail: row.connected_email,
+    connectedAt: row.connected_at,
+    createdAt: row.created_at,
+  };
 }
 
-export function getAllClients() {
-  return loadClients();
+// Convert app camelCase to DB snake_case
+function toDbFormat(obj) {
+  const row = {};
+  if (obj.id !== undefined) row.id = obj.id;
+  if (obj.name !== undefined) row.name = obj.name;
+  if (obj.business !== undefined) row.business = obj.business;
+  if (obj.email !== undefined) row.email = obj.email;
+  if (obj.phone !== undefined) row.phone = obj.phone;
+  if (obj.agentId !== undefined) row.agent_id = obj.agentId;
+  if (obj.calendarConnected !== undefined) row.calendar_connected = obj.calendarConnected;
+  if (obj.tokens !== undefined) row.tokens = obj.tokens;
+  if (obj.connectedEmail !== undefined) row.connected_email = obj.connectedEmail;
+  if (obj.connectedAt !== undefined) row.connected_at = obj.connectedAt;
+  if (obj.createdAt !== undefined) row.created_at = obj.createdAt;
+  return row;
 }

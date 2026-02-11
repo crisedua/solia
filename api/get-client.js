@@ -1,13 +1,13 @@
 import { getClient } from './lib/store.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   try {
     const clientId = req.query.id;
     if (!clientId) {
       return res.status(400).json({ error: 'id query param required' });
     }
 
-    const client = getClient(clientId);
+    const client = await getClient(clientId);
     if (!client) {
       return res.status(404).json({ error: 'Client not found' });
     }
@@ -20,7 +20,7 @@ export default function handler(req, res) {
       connectedEmail: client.connectedEmail,
     });
   } catch (err) {
-    console.error('Error in /api/get-client:', err);
+    console.error('Error:', err);
     res.status(500).json({ error: err.message });
   }
 }

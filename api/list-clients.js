@@ -1,6 +1,6 @@
 import { getAllClients } from './lib/store.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-key');
@@ -13,7 +13,7 @@ export default function handler(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const clients = getAllClients();
+    const clients = await getAllClients();
     const list = Object.values(clients).map((c) => ({
       id: c.id,
       name: c.name,

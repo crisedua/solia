@@ -1,12 +1,10 @@
 import crypto from 'crypto';
 import { upsertClient } from './lib/store.js';
 
-export default function handler(req, res) {
-  try {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  try {
     const { name, business, email, phone } = req.body || {};
     if (!name || !business) {
       return res.status(400).json({ error: 'name and business are required' });
@@ -14,7 +12,7 @@ export default function handler(req, res) {
 
     const clientId = crypto.randomBytes(12).toString('base64url');
 
-    const client = upsertClient(clientId, {
+    const client = await upsertClient(clientId, {
       id: clientId,
       name,
       business,
@@ -30,7 +28,7 @@ export default function handler(req, res) {
 
     res.json({ client });
   } catch (err) {
-    console.error('Error in /api/register-client:', err);
+    console.error('Error:', err);
     res.status(500).json({ error: err.message });
   }
 }

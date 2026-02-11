@@ -1,10 +1,10 @@
 import { getClient } from '../lib/store.js';
 import { createOAuth2Client, SCOPES } from '../lib/google.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   try {
     const { clientId } = req.query;
-    const client = getClient(clientId);
+    const client = await getClient(clientId);
 
     if (!client) {
       return res.status(404).send('Invalid link');
@@ -20,7 +20,7 @@ export default function handler(req, res) {
 
     res.redirect(authUrl);
   } catch (err) {
-    console.error('Error in /api/connect:', err);
+    console.error('Error:', err);
     res.status(500).send('Error starting authentication');
   }
 }

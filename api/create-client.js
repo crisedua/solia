@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { upsertClient } from './lib/store.js';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-key');
@@ -23,7 +23,7 @@ export default function handler(req, res) {
     const clientId = crypto.randomBytes(12).toString('base64url');
     const baseUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
 
-    const client = upsertClient(clientId, {
+    const client = await upsertClient(clientId, {
       id: clientId,
       name,
       business,
