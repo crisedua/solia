@@ -19,7 +19,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <a href="#" className="hidden md:block text-xs font-medium hover:text-white transition-colors">Iniciar sesión</a>
+          <a href="/admin/login" className="hidden md:block text-xs font-medium hover:text-white transition-colors">Admin</a>
           <button className="bg-white hover:bg-slate-200 text-[#0f172a] text-xs font-semibold px-4 py-2 rounded-full transition-colors flex items-center gap-2">
             Agendar demo
             <Icon icon="solar:arrow-right-linear" width="14" />
