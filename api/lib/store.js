@@ -64,6 +64,7 @@ function toAppFormat(row) {
     email: row.email || '',
     phone: row.phone || '',
     agentId: row.agent_id,
+    agentName: row.agent_name,
     calendarConnected: row.calendar_connected || false,
     tokens: row.tokens,
     connectedEmail: row.connected_email,
@@ -81,6 +82,7 @@ function toDbFormat(obj) {
   if (obj.email !== undefined) row.email = obj.email;
   if (obj.phone !== undefined) row.phone = obj.phone;
   if (obj.agentId !== undefined) row.agent_id = obj.agentId;
+  if (obj.agentName !== undefined) row.agent_name = obj.agentName;
   if (obj.calendarConnected !== undefined) row.calendar_connected = obj.calendarConnected;
   if (obj.tokens !== undefined) row.tokens = obj.tokens;
   if (obj.connectedEmail !== undefined) row.connected_email = obj.connectedEmail;

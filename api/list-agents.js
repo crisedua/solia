@@ -1,4 +1,4 @@
-import { getAllClients } from './lib/store.js';
+import { VapiClient } from '@vapi-ai/server-sdk';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,23 +13,19 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const clients = await getAllClients();
-    const list = Object.values(clients).map((c) => ({
-      id: c.id,
-      name: c.name,
-      business: c.business,
-      email: c.email,
-      calendarConnected: c.calendarConnected,
-      connectedEmail: c.connectedEmail,
-      connectedAt: c.connectedAt,
-      createdAt: c.createdAt,
-      agentId: c.agentId || null,
-      agentName: c.agentName || null,
+    const vapi = new VapiClient({ token: process.env.VAPI_API_KEY });
+    const assistants = await vapi.assistants.list();
+
+    const list = (assistants || []).map((a) => ({
+      id: a.id,
+      name: a.name || 'Sin nombre',
+      createdAt: a.createdAt,
+      model: a.model?.model || 'unknown',
     }));
 
     res.json(list);
   } catch (err) {
-    console.error('Error:', err);
+    console.error('Error listing agents:', err);
     res.status(500).json({ error: err.message });
   }
 }
