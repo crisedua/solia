@@ -35,7 +35,7 @@ export default function OnboardPage() {
     }
 
     // Existing client — check their status
-    fetch(`/api/clients/${clientId}`)
+    fetch(`/api/get-client?id=${clientId}`)
       .then(async (res) => {
         if (res.ok) {
           const data = await res.json();

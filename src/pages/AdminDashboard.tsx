@@ -44,7 +44,7 @@ export default function AdminDashboard() {
   const fetchClients = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/clients', {
+      const res = await fetch('/api/list-clients', {
         headers: { 'x-admin-key': adminKey! },
       });
       if (res.status === 401) {
