@@ -54,8 +54,11 @@ export default function AdminDashboard() {
       }
       const data = await res.json();
       setClients(Array.isArray(data) ? data : []);
-    } catch {
-      setError('Failed to load clients');
+      if (!Array.isArray(data) && data.error) {
+        setError(`List error: ${data.error}`);
+      }
+    } catch (err) {
+      setError(`Failed to load clients: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -78,16 +81,20 @@ export default function AdminDashboard() {
           phone: formPhone,
         }),
       });
+      const data = await res.json();
       if (res.ok) {
         setFormName('');
         setFormBusiness('');
         setFormEmail('');
         setFormPhone('');
         setShowForm(false);
+        setError('');
         fetchClients();
+      } else {
+        setError(`Create failed: ${data.error || res.statusText}`);
       }
-    } catch {
-      setError('Failed to create client');
+    } catch (err) {
+      setError(`Failed to create client: ${err}`);
     } finally {
       setCreating(false);
     }
