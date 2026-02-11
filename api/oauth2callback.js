@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import { createOAuth2Client } from './lib/google.js';
 import { upsertClient, getClient } from './lib/store.js';
-import { createAgentForClient } from './lib/elevenlabs.js';
+import { createAgentForClient } from './lib/vapi.js';
 
 export default async function handler(req, res) {
   const { code, state } = req.query;

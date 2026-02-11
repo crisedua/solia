@@ -7,6 +7,7 @@ export default async function handler(req, res) {
     ADMIN_SECRET: !!process.env.ADMIN_SECRET,
     GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
     ELEVENLABS_API_KEY: !!process.env.ELEVENLABS_API_KEY,
+    VAPI_API_KEY: !!process.env.VAPI_API_KEY,
     APP_BASE_URL: process.env.APP_BASE_URL || 'not set',
   };
 
