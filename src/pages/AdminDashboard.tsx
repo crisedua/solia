@@ -65,7 +65,7 @@ export default function AdminDashboard() {
     if (!formName.trim() || !formBusiness.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch('/api/clients/create', {
+      const res = await fetch('/api/create-client', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

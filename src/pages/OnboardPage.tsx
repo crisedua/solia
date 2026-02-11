@@ -52,7 +52,7 @@ export default function OnboardPage() {
     if (!name.trim() || !business.trim()) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/clients/register', {
+      const res = await fetch('/api/register-client', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, business, email, phone }),

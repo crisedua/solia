@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { upsertClient } from '../lib/store.js';
+import { upsertClient } from './lib/store.js';
 
 export default function handler(req, res) {
   try {
@@ -7,7 +7,7 @@ export default function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { name, business, email, phone } = req.body;
+    const { name, business, email, phone } = req.body || {};
     if (!name || !business) {
       return res.status(400).json({ error: 'name and business are required' });
     }
@@ -30,7 +30,7 @@ export default function handler(req, res) {
 
     res.json({ client });
   } catch (err) {
-    console.error('Error in /api/clients/register:', err);
+    console.error('Error in /api/register-client:', err);
     res.status(500).json({ error: err.message });
   }
 }
