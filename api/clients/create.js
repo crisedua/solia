@@ -2,17 +2,30 @@ import crypto from 'crypto';
 import { upsertClient } from '../lib/store.js';
 
 export default function handler(req, res) {
+  // Allow CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-key');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
     const authHeader = req.headers['x-admin-key'];
-    if (authHeader !== process.env.ADMIN_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    const adminSecret = process.env.ADMIN_SECRET;
+
+    if (!adminSecret) {
+      return res.status(500).json({ error: 'ADMIN_SECRET not configured on server' });
     }
 
-    const { name, business, email, phone } = req.body;
+    if (authHeader !== adminSecret) {
+      return res.status(401).json({ error: 'Unauthorized', received: !!authHeader });
+    }
+
+    const { name, business, email, phone } = req.body || {};
     if (!name || !business) {
       return res.status(400).json({ error: 'name and business are required' });
     }
@@ -40,6 +53,6 @@ export default function handler(req, res) {
     });
   } catch (err) {
     console.error('Error in /api/clients/create:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 }
