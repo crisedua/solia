@@ -1,12 +1,10 @@
 {
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/connect/:clientId", "destination": "/api/connect/[clientId]" },
+    { "source": "/api/calendar/:clientId", "destination": "/api/calendar/[clientId]" },
+    { "source": "/api/clients", "destination": "/api/clients" },
+    { "source": "/api/agents", "destination": "/api/agents" },
+    { "source": "/api/oauth2callback", "destination": "/api/oauth2callback" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
