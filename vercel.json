@@ -25,6 +25,10 @@
       "destination": "/api/elevenlabs-webhook"
     },
     {
+      "source": "/api/elevenlabs-agents",
+      "destination": "/api/elevenlabs-agents"
+    },
+    {
       "source": "/api/check-availability",
       "destination": "/api/check-availability"
     },
