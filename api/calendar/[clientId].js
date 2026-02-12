@@ -82,7 +82,8 @@ export default async function handler(req, res) {
           });
 
           const busySlots = response.data.calendars?.primary?.busy || [];
-          console.log(`Date ${date}: busy=${JSON.stringify(busySlots)}`);
+          const errors = response.data.calendars?.primary?.errors;
+          console.log(`Date ${date}: timeMin=${timeMin.toISOString()}, timeMax=${timeMax.toISOString()}, busy=${JSON.stringify(busySlots)}, errors=${JSON.stringify(errors)}`);
           const availableSlots = [];
           let current = new Date(timeMin);
           while (current < timeMax) {
@@ -129,6 +130,28 @@ export default async function handler(req, res) {
 
       const result = await calendar.events.insert({ calendarId: 'primary', resource: event, sendUpdates: 'all' });
       return res.json({ results: [{ result: { success: true, message: `Cita agendada para ${caller_name || 'cliente'} el ${date} a las ${time}`, event_link: result.data.htmlLink } }] });
+    }
+
+    // Debug endpoint
+    if (action === 'debug') {
+      const tokenInfo = {
+        hasAccessToken: !!client.tokens.access_token,
+        hasRefreshToken: !!client.tokens.refresh_token,
+        tokenType: client.tokens.token_type,
+        expiryDate: client.tokens.expiry_date ? new Date(client.tokens.expiry_date).toISOString() : 'none',
+        scope: client.tokens.scope,
+      };
+
+      // Try a simple calendar list call to test auth
+      let calendarTest = 'not tested';
+      try {
+        const list = await calendar.calendarList.list({ maxResults: 1 });
+        calendarTest = `OK - found ${list.data.items?.length || 0} calendars, primary: ${list.data.items?.[0]?.id}`;
+      } catch (err) {
+        calendarTest = `FAILED: ${err.message}`;
+      }
+
+      return res.json({ clientId, tokenInfo, calendarTest });
     }
 
     return res.json({ results: [{ error: 'Invalid action' }] });
