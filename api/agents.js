@@ -1,6 +1,20 @@
 import { VapiClient } from '@vapi-ai/server-sdk';
 import { upsertClient, getClient } from './lib/store.js';
 
+async function vapiPatch(agentId, body) {
+  const res = await fetch(`https://api.vapi.ai/assistant/${agentId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${process.env.VAPI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -34,7 +48,6 @@ export default async function handler(req, res) {
       const client = await getClient(clientId);
       if (!client) return res.status(404).json({ error: 'Client not found' });
 
-      // Update agent tools and system prompt
       const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
       const systemPrompt = `Eres una recepcionista IA amable y profesional para ${client.business}. Tu nombre es Solia.
 
@@ -55,53 +68,51 @@ REGLAS IMPORTANTES:
 Negocio: ${client.business}
 Contacto: ${client.name}`;
 
-      const tools = [
-        {
-          type: 'function',
-          function: {
-            name: 'checkAvailability',
-            description: 'Verifica disponibilidad en el calendario para una fecha. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
-            parameters: {
-              type: 'object',
-              properties: { date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' } },
-              required: ['date'],
-            },
-          },
-          server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability` },
-        },
-        {
-          type: 'function',
-          function: {
-            name: 'scheduleMeeting',
-            description: 'Agenda una cita en el calendario del negocio. Zona horaria Chile.',
-            parameters: {
-              type: 'object',
-              properties: {
-                date: { type: 'string', description: 'Fecha YYYY-MM-DD' },
-                time: { type: 'string', description: 'Hora HH:MM formato 24h' },
-                caller_name: { type: 'string', description: 'Nombre del llamante' },
-                caller_email: { type: 'string', description: 'Correo del llamante' },
-                caller_phone: { type: 'string', description: 'Teléfono del llamante' },
-              },
-              required: ['date', 'time', 'caller_name'],
-            },
-          },
-          server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
-        },
-      ];
-
       try {
-        await vapi.assistants.update(agentId, {
+        await vapiPatch(agentId, {
           model: {
             provider: 'openai',
             model: 'gpt-4o',
             messages: [{ role: 'system', content: systemPrompt }],
-            tools,
+            tools: [
+              {
+                type: 'function',
+                function: {
+                  name: 'checkAvailability',
+                  description: 'Verifica disponibilidad en el calendario para una fecha. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
+                  parameters: {
+                    type: 'object',
+                    properties: { date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' } },
+                    required: ['date'],
+                  },
+                },
+                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability` },
+              },
+              {
+                type: 'function',
+                function: {
+                  name: 'scheduleMeeting',
+                  description: 'Agenda una cita en el calendario del negocio. Zona horaria Chile.',
+                  parameters: {
+                    type: 'object',
+                    properties: {
+                      date: { type: 'string', description: 'Fecha YYYY-MM-DD' },
+                      time: { type: 'string', description: 'Hora HH:MM formato 24h' },
+                      caller_name: { type: 'string', description: 'Nombre del llamante' },
+                      caller_email: { type: 'string', description: 'Correo del llamante' },
+                      caller_phone: { type: 'string', description: 'Teléfono del llamante' },
+                    },
+                    required: ['date', 'time', 'caller_name'],
+                  },
+                },
+                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
+              },
+            ],
           },
         });
       } catch (err) {
-        console.error('VAPI update error:', err?.statusCode, err?.message || err?.body || err);
-        return res.status(500).json({ error: 'Failed to update VAPI agent', detail: err?.message || String(err) });
+        console.error('VAPI update error:', err.message);
+        return res.status(500).json({ error: 'Failed to update VAPI agent', detail: err.message });
       }
 
       const updated = await upsertClient(clientId, { agentId, agentName: agentName || 'Sin nombre' });
