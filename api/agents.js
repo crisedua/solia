@@ -23,13 +23,21 @@ export default async function handler(req, res) {
         id: a.id, name: a.name || 'Sin nombre',
         createdAt: a.createdAt, model: a.model?.model || 'unknown',
       }));
+      console.log('VAPI agents raw IDs:', (assistants || []).map(a => ({ id: a.id, type: typeof a.id })));
       return res.json(list);
     }
 
     // POST /api/agents?action=assign
     if (req.method === 'POST' && action === 'assign') {
       const { clientId, agentId } = req.body || {};
+      console.log('Assign request - clientId:', clientId, 'agentId:', agentId, 'type:', typeof agentId);
       if (!clientId || !agentId) return res.status(400).json({ error: 'clientId and agentId required' });
+
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(agentId)) {
+        return res.status(400).json({ error: `Invalid agent ID format: "${agentId}"` });
+      }
 
       const client = await getClient(clientId);
       if (!client) return res.status(404).json({ error: 'Client not found' });
