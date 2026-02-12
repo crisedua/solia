@@ -105,11 +105,12 @@ export default function AdminDashboard() {
 
   const handleAssign = async (clientId: string) => {
     if (!selectedAgent) return;
+    const agent = agents.find(a => a.id === selectedAgent);
     try {
       const res = await fetch('/api/agents?action=assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
-        body: JSON.stringify({ clientId, agentId: selectedAgent }),
+        body: JSON.stringify({ clientId, agentId: selectedAgent, agentName: agent?.name || 'Sin nombre' }),
       });
       if (res.ok) {
         setAssigningId(null);

@@ -23,37 +23,20 @@ export default async function handler(req, res) {
         id: a.id, name: a.name || 'Sin nombre',
         createdAt: a.createdAt, model: a.model?.model || 'unknown',
       }));
-      console.log('VAPI agents raw IDs:', (assistants || []).map(a => ({ id: a.id, type: typeof a.id })));
       return res.json(list);
     }
 
     // POST /api/agents?action=assign
     if (req.method === 'POST' && action === 'assign') {
-      const { clientId, agentId } = req.body || {};
-      console.log('Assign request - clientId:', clientId, 'agentId:', agentId, 'type:', typeof agentId);
+      const { clientId, agentId, agentName } = req.body || {};
       if (!clientId || !agentId) return res.status(400).json({ error: 'clientId and agentId required' });
-
-      // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(agentId)) {
-        return res.status(400).json({ error: `Invalid agent ID format: "${agentId}"` });
-      }
 
       const client = await getClient(clientId);
       if (!client) return res.status(404).json({ error: 'Client not found' });
 
-      let agent;
-      try {
-        agent = await vapi.assistants.get(agentId);
-      } catch (err) {
-        console.error('VAPI get agent error:', err?.message || err, 'agentId:', agentId);
-        return res.status(404).json({ error: 'VAPI agent not found', detail: err?.message || String(err) });
-      }
-
-      // Update agent tools and system prompt to point to this client's calendar
+      // Update agent tools and system prompt
       const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
-      try {
-        const systemPrompt = `Eres una recepcionista IA amable y profesional para ${client.business}. Tu nombre es Solia.
+      const systemPrompt = `Eres una recepcionista IA amable y profesional para ${client.business}. Tu nombre es Solia.
 
 Tu trabajo es:
 - Contestar llamadas profesionalmente
@@ -72,51 +55,56 @@ REGLAS IMPORTANTES:
 Negocio: ${client.business}
 Contacto: ${client.name}`;
 
+      const tools = [
+        {
+          type: 'function',
+          function: {
+            name: 'checkAvailability',
+            description: 'Verifica disponibilidad en el calendario para una fecha. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
+            parameters: {
+              type: 'object',
+              properties: { date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' } },
+              required: ['date'],
+            },
+          },
+          server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability` },
+        },
+        {
+          type: 'function',
+          function: {
+            name: 'scheduleMeeting',
+            description: 'Agenda una cita en el calendario del negocio. Zona horaria Chile.',
+            parameters: {
+              type: 'object',
+              properties: {
+                date: { type: 'string', description: 'Fecha YYYY-MM-DD' },
+                time: { type: 'string', description: 'Hora HH:MM formato 24h' },
+                caller_name: { type: 'string', description: 'Nombre del llamante' },
+                caller_email: { type: 'string', description: 'Correo del llamante' },
+                caller_phone: { type: 'string', description: 'Teléfono del llamante' },
+              },
+              required: ['date', 'time', 'caller_name'],
+            },
+          },
+          server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
+        },
+      ];
+
+      try {
         await vapi.assistants.update(agentId, {
           model: {
-            ...agent.model,
+            provider: 'openai',
+            model: 'gpt-4o',
             messages: [{ role: 'system', content: systemPrompt }],
-            tools: [
-              {
-                type: 'function',
-                function: {
-                  name: 'checkAvailability',
-                  description: 'Verifica disponibilidad en el calendario para una fecha. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
-                  parameters: {
-                    type: 'object',
-                    properties: { date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' } },
-                    required: ['date'],
-                  },
-                },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability` },
-              },
-              {
-                type: 'function',
-                function: {
-                  name: 'scheduleMeeting',
-                  description: 'Agenda una cita en el calendario del negocio. Zona horaria Chile.',
-                  parameters: {
-                    type: 'object',
-                    properties: {
-                      date: { type: 'string', description: 'Fecha YYYY-MM-DD' },
-                      time: { type: 'string', description: 'Hora HH:MM formato 24h' },
-                      caller_name: { type: 'string', description: 'Nombre del llamante' },
-                      caller_email: { type: 'string', description: 'Correo del llamante' },
-                      caller_phone: { type: 'string', description: 'Teléfono del llamante' },
-                    },
-                    required: ['date', 'time', 'caller_name'],
-                  },
-                },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
-              },
-            ],
+            tools,
           },
         });
       } catch (err) {
-        console.error('Failed to update agent tools:', err);
+        console.error('VAPI update error:', err?.statusCode, err?.message || err?.body || err);
+        return res.status(500).json({ error: 'Failed to update VAPI agent', detail: err?.message || String(err) });
       }
 
-      const updated = await upsertClient(clientId, { agentId, agentName: agent.name || 'Sin nombre' });
+      const updated = await upsertClient(clientId, { agentId, agentName: agentName || 'Sin nombre' });
       return res.json({ success: true, client: updated });
     }
 
