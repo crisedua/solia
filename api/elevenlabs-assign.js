@@ -34,23 +34,24 @@ export default async function handler(req, res) {
     
     console.log(`[ElevenLabs Assign] Creating agent for client ${clientId} (${client.business})`);
     
-    const agentId = await createElevenLabsAgent(clientId, client, baseApiUrl);
-    
-    if (!agentId) {
-      return res.status(500).json({ error: 'Failed to create ElevenLabs agent' });
+    try {
+      const agentId = await createElevenLabsAgent(clientId, client, baseApiUrl);
+      
+      const updated = await upsertClient(clientId, { 
+        agentId, 
+        agentName: `${client.business} - Vista Costa` 
+      });
+
+      return res.json({ 
+        success: true, 
+        agentId,
+        agentName: `${client.business} - Vista Costa`,
+        client: updated 
+      });
+    } catch (createError) {
+      console.error('[ElevenLabs Assign] Agent creation failed:', createError.message);
+      return res.status(500).json({ error: `Failed to create agent: ${createError.message}` });
     }
-
-    const updated = await upsertClient(clientId, { 
-      agentId, 
-      agentName: `${client.business} - Vista Costa` 
-    });
-
-    return res.json({ 
-      success: true, 
-      agentId,
-      agentName: `${client.business} - Vista Costa`,
-      client: updated 
-    });
   } catch (err) {
     console.error('[ElevenLabs Assign] Error:', err);
     return res.status(500).json({ error: err.message });

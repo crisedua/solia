@@ -81,12 +81,14 @@ REGLAS:
       body: JSON.stringify(agentConfig),
     });
 
+    const responseText = await createResponse.text();
+    
     if (!createResponse.ok) {
-      const error = await createResponse.json();
-      throw new Error(`Failed to create agent: ${JSON.stringify(error)}`);
+      console.error('[ElevenLabs] API Error:', responseText);
+      throw new Error(`Failed to create agent (${createResponse.status}): ${responseText}`);
     }
 
-    const agent = await createResponse.json();
+    const agent = JSON.parse(responseText);
     const agentId = agent.agent_id;
 
     console.log(`[ElevenLabs] Created agent ${agentId} for ${client.business}`);
@@ -94,6 +96,6 @@ REGLAS:
     return agentId;
   } catch (err) {
     console.error('[ElevenLabs] Error creating agent:', err.message);
-    return null;
+    throw err; // Re-throw so the caller can see the actual error
   }
 }
