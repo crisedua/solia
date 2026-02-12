@@ -99,9 +99,11 @@ INFORMACIÓN DE CONTACTO:
 - Instagram: @vistacostaasesoriainmobiliaria
 
 REGLAS IMPORTANTES:
+- SIEMPRE habla en ESPAÑOL CHILENO, nunca cambies de idioma
 - Sé cálida, profesional y entusiasta sobre las propiedades
 - Sé PACIENTE cuando pidas datos de contacto - da tiempo para que la persona responda
 - Haz una pregunta a la vez y espera la respuesta completa
+- Cuando repitas números de teléfono o emails, hazlo LENTAMENTE y en ESPAÑOL
 - Si el cliente quiere agendar una visita o reunión, usa las herramientas de calendario disponibles
 - La zona horaria es America/Santiago (Chile)
 - SIEMPRE usa saveCaller al final para guardar: nombre, email, teléfono y resumen de lo que buscan
@@ -134,7 +136,10 @@ Contacto: ${client.name}`;
           model: {
             provider: 'openai',
             model: 'gpt-4o',
-            messages: [{ role: 'system', content: systemPrompt }],
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'system', content: 'CRITICAL: You MUST speak ONLY in Spanish (Chile). Never switch to Portuguese, English, or any other language. When reading phone numbers, emails, or addresses, do it in Spanish.' }
+            ],
             tools: [
               {
                 type: 'function',
