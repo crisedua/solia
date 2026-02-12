@@ -37,34 +37,41 @@ export default async function handler(req, res) {
     oauth2Client.setCredentials(client.tokens);
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-    // Availability
+    // Availability (supports multiple dates)
     if (action === 'availability') {
       const params = extractParams(req);
-      const date = req.query.date || params.date;
-      if (!date) return res.status(400).json({ error: 'date required (YYYY-MM-DD)' });
+      const datesParam = req.query.dates || req.query.date || params.dates || params.date;
+      if (!datesParam) return res.status(400).json({ error: 'dates required (YYYY-MM-DD, comma separated)' });
 
-      const timeMin = new Date(`${date}T09:00:00`);
-      const timeMax = new Date(`${date}T18:00:00`);
+      const dates = datesParam.split(',').map(d => d.trim()).slice(0, 5);
+      const allAvailability = {};
 
-      const response = await calendar.freebusy.query({
-        resource: {
-          timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
-          timeZone: 'America/Santiago', items: [{ id: 'primary' }],
-        },
-      });
+      for (const date of dates) {
+        const timeMin = new Date(`${date}T09:00:00`);
+        const timeMax = new Date(`${date}T18:00:00`);
 
-      const busySlots = response.data.calendars?.primary?.busy || [];
-      const availableSlots = [];
-      let current = new Date(timeMin);
-      while (current < timeMax) {
-        const next = new Date(current.getTime() + 60 * 60 * 1000);
-        const isBusy = busySlots.some((b) => current < new Date(b.end) && next > new Date(b.start));
-        if (!isBusy) availableSlots.push(current.toTimeString().slice(0, 5));
-        current = next;
+        const response = await calendar.freebusy.query({
+          resource: {
+            timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
+            timeZone: 'America/Santiago', items: [{ id: 'primary' }],
+          },
+        });
+
+        const busySlots = response.data.calendars?.primary?.busy || [];
+        const availableSlots = [];
+        let current = new Date(timeMin);
+        while (current < timeMax) {
+          const next = new Date(current.getTime() + 60 * 60 * 1000);
+          const isBusy = busySlots.some((b) => current < new Date(b.end) && next > new Date(b.start));
+          if (!isBusy) availableSlots.push(current.toTimeString().slice(0, 5));
+          current = next;
+        }
+        if (availableSlots.length > 0) {
+          allAvailability[date] = availableSlots;
+        }
       }
 
-      // Return in VAPI-compatible format
-      return res.json({ results: [{ result: { date, available_slots: availableSlots } }] });
+      return res.json({ results: [{ result: allAvailability }] });
     }
 
     // Schedule

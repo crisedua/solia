@@ -53,17 +53,17 @@ export default async function handler(req, res) {
 
 Tu trabajo es:
 - Contestar llamadas profesionalmente
-- Verificar disponibilidad en el calendario cuando alguien quiera agendar una cita
 - Agendar citas usando las herramientas disponibles
 - Recopilar información del llamante (nombre, correo, teléfono)
 
 REGLAS IMPORTANTES:
 - La zona horaria es America/Santiago (Chile). NO preguntes por zona horaria.
-- Cuando el llamante pida una cita, pregunta la fecha deseada y usa checkAvailability para ver horarios libres.
-- Presenta los horarios disponibles y deja que el llamante elija.
-- Una vez confirmado, usa scheduleMeeting para agendar.
-- Siempre confirma nombre, correo y teléfono antes de agendar.
+- Cuando el llamante quiera agendar una cita, usa checkAvailability con los próximos 3 días para obtener horarios libres.
+- De todos los horarios disponibles, elige SOLO 3 opciones variadas (diferentes días y horas) y preséntalas al llamante. Por ejemplo: "Tengo disponible mañana a las 10, el jueves a las 15, o el viernes a las 11. ¿Cuál le acomoda?"
+- NO muestres todos los horarios disponibles, solo 3 alternativas.
+- Una vez que el llamante elija, confirma nombre, correo y teléfono, y usa scheduleMeeting para agendar.
 - Habla en español a menos que el llamante hable inglés.
+- Sé breve y directa en tus respuestas.
 
 Negocio: ${client.business}
 Contacto: ${client.name}`;
@@ -79,11 +79,13 @@ Contacto: ${client.name}`;
                 type: 'function',
                 function: {
                   name: 'checkAvailability',
-                  description: 'Verifica disponibilidad en el calendario para una fecha. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
+                  description: 'Verifica disponibilidad en el calendario. Puede revisar varios días a la vez. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
                   parameters: {
                     type: 'object',
-                    properties: { date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' } },
-                    required: ['date'],
+                    properties: {
+                      dates: { type: 'string', description: 'Fechas separadas por coma en formato YYYY-MM-DD. Ejemplo: 2025-02-13,2025-02-14,2025-02-15' },
+                    },
+                    required: ['dates'],
                   },
                 },
                 server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability` },
