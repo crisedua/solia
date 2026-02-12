@@ -15,14 +15,14 @@ export async function createAgentForClient(clientId, client, baseApiUrl) {
   try {
     const assistant = await vapi.assistants.create({
       name: `${client.business} - Asistente de Voz`,
-      firstMessage: `Hola, gracias por llamar a ${client.business}. Soy Solia, su asistente virtual. ¿En qué puedo ayudarle?`,
+      firstMessage: `Hola, gracias por llamar a ${client.business}. Soy el asistente virtual. ¿En qué puedo ayudarle?`,
       model: {
         provider: 'openai',
         model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `Eres una recepcionista IA amable y profesional para ${client.business}. Tu nombre es Solia.
+            content: `Eres el asistente virtual profesional de ${client.business}.
 
 Tu trabajo es:
 - Contestar llamadas profesionalmente
@@ -30,7 +30,7 @@ Tu trabajo es:
 - Agendar citas
 - Recopilar información del llamante (nombre, correo, teléfono)
 
-Siempre sé cálida, servicial y eficiente. Habla en español a menos que el llamante hable inglés.
+Siempre sé cálido, servicial y eficiente. Habla en español a menos que el llamante hable inglés.
 
 Negocio: ${client.business}
 Contacto: ${client.name}`,
