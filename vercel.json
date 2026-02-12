@@ -1,10 +1,44 @@
 {
   "rewrites": [
-    { "source": "/api/connect/:clientId", "destination": "/api/connect/[clientId]" },
-    { "source": "/api/calendar/:clientId", "destination": "/api/calendar/[clientId]" },
-    { "source": "/api/clients", "destination": "/api/clients" },
-    { "source": "/api/agents", "destination": "/api/agents" },
-    { "source": "/api/oauth2callback", "destination": "/api/oauth2callback" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/connect/:clientId",
+      "destination": "/api/connect/[clientId]"
+    },
+    {
+      "source": "/api/calendar/:clientId",
+      "destination": "/api/calendar/[clientId]"
+    },
+    {
+      "source": "/api/clients",
+      "destination": "/api/clients"
+    },
+    {
+      "source": "/api/agents",
+      "destination": "/api/agents"
+    },
+    {
+      "source": "/api/oauth2callback",
+      "destination": "/api/oauth2callback"
+    },
+    {
+      "source": "/api/elevenlabs-webhook",
+      "destination": "/api/elevenlabs-webhook"
+    },
+    {
+      "source": "/api/check-availability",
+      "destination": "/api/check-availability"
+    },
+    {
+      "source": "/api/schedule-meeting",
+      "destination": "/api/schedule-meeting"
+    },
+    {
+      "source": "/api/create-lead",
+      "destination": "/api/create-lead"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
