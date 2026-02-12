@@ -28,7 +28,7 @@ export default function OnboardPage() {
     if (!clientId) return;
     if (clientId === 'new') { setStep('form'); return; }
 
-    fetch(`/api/get-client?id=${clientId}`)
+    fetch(`/api/clients?action=get&id=${clientId}`)
       .then(async (res) => {
         if (res.ok) {
           const data = await res.json();
@@ -45,7 +45,7 @@ export default function OnboardPage() {
     if (!name.trim() || !business.trim()) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/register-client', {
+      const res = await fetch('/api/clients?action=register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, business, email, phone }),

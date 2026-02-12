@@ -55,8 +55,8 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [clientsRes, agentsRes] = await Promise.all([
-        fetch('/api/list-clients', { headers: { 'x-admin-key': adminKey! } }),
-        fetch('/api/list-agents', { headers: { 'x-admin-key': adminKey! } }),
+        fetch('/api/clients?action=list', { headers: { 'x-admin-key': adminKey! } }),
+        fetch('/api/agents?action=list', { headers: { 'x-admin-key': adminKey! } }),
       ]);
 
       if (clientsRes.status === 401) {
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
     if (!formName.trim() || !formBusiness.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch('/api/create-client', {
+      const res = await fetch('/api/clients?action=create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
         body: JSON.stringify({ name: formName, business: formBusiness, email: formEmail, phone: formPhone }),
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
   const handleAssign = async (clientId: string) => {
     if (!selectedAgent) return;
     try {
-      const res = await fetch('/api/assign-agent', {
+      const res = await fetch('/api/agents?action=assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
         body: JSON.stringify({ clientId, agentId: selectedAgent }),
