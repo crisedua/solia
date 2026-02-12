@@ -13,10 +13,6 @@
       "destination": "/api/clients"
     },
     {
-      "source": "/api/agents",
-      "destination": "/api/agents"
-    },
-    {
       "source": "/api/oauth2callback",
       "destination": "/api/oauth2callback"
     },
@@ -27,18 +23,6 @@
     {
       "source": "/api/elevenlabs-agents",
       "destination": "/api/elevenlabs-agents"
-    },
-    {
-      "source": "/api/check-availability",
-      "destination": "/api/check-availability"
-    },
-    {
-      "source": "/api/schedule-meeting",
-      "destination": "/api/schedule-meeting"
-    },
-    {
-      "source": "/api/create-lead",
-      "destination": "/api/create-lead"
     },
     {
       "source": "/(.*)",
