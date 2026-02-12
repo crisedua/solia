@@ -142,7 +142,7 @@ export default function AdminDashboard() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
               <Icon icon="solar:voice-scan-linear" width="16" />
             </div>
-            <span className="text-sm font-semibold text-white">Sol-IA</span>
+            <span className="text-sm font-semibold text-white">Vista Costa</span>
             <span className="text-xs text-slate-500 ml-2">Admin</span>
           </div>
           <button onClick={() => { sessionStorage.removeItem('adminKey'); navigate('/admin/login'); }}

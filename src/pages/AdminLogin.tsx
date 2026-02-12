@@ -21,7 +21,7 @@ export default function AdminLogin() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
             <Icon icon="solar:voice-scan-linear" width="22" />
           </div>
-          <span className="text-lg font-semibold tracking-tight text-white">Sol-IA</span>
+          <span className="text-lg font-semibold tracking-tight text-white">Vista Costa</span>
         </div>
 
         <div className="rounded-2xl bg-[#0f172a] border border-white/10 shadow-2xl p-6 space-y-5">
