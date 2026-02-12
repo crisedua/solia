@@ -1,10 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const { google } = require('googleapis');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import { google } from 'googleapis';
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,7 +45,7 @@ const loadLinks = () => {
     if (fs.existsSync(LINKS_PATH)) {
       return JSON.parse(fs.readFileSync(LINKS_PATH, 'utf-8'));
     }
-  } catch (_) {}
+  } catch (_) { }
   return {};
 };
 
@@ -138,7 +143,7 @@ app.get('/oauth2callback', async (req, res) => {
   let stateData = {};
   try {
     stateData = JSON.parse(state || '{}');
-  } catch (_) {}
+  } catch (_) { }
 
   try {
     const { tokens } = await oauth2Client.getToken(code);
@@ -150,7 +155,7 @@ app.get('/oauth2callback', async (req, res) => {
     try {
       const userInfo = await oauth2.userinfo.get();
       email = userInfo.data.email || 'unknown';
-    } catch (_) {}
+    } catch (_) { }
 
     if (stateData.type === 'shared' && stateData.linkId) {
       // Save tokens per connection
@@ -273,6 +278,14 @@ app.post('/api/schedule-meeting', async (req, res) => {
     console.error('Error scheduling meeting:', error);
     res.status(500).json({ error: 'Failed to schedule meeting', details: error.message });
   }
+});
+
+// Create Lead (for agent)
+app.post('/api/create-lead', (req, res) => {
+  const { name, email, phone, need, notes } = req.body;
+  console.log('New Lead:', { name, email, phone, need, notes });
+  // TODO: Save to database or CRM
+  res.json({ success: true, message: 'Lead created successfully' });
 });
 
 app.listen(port, () => {

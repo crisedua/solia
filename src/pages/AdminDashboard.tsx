@@ -55,9 +55,8 @@ export default function AdminDashboard() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [clientsRes, vapiAgentsRes, elevenLabsAgentsRes] = await Promise.all([
+      const [clientsRes, elevenLabsAgentsRes] = await Promise.all([
         fetch('/api/clients?action=list', { headers: { 'x-admin-key': adminKey! } }),
-        fetch('/api/agents?action=list', { headers: { 'x-admin-key': adminKey! } }),
         fetch('/api/elevenlabs-agents?action=list', { headers: { 'x-admin-key': adminKey! } }),
       ]);
 
@@ -70,17 +69,11 @@ export default function AdminDashboard() {
       const clientsData = await clientsRes.json();
       setClients(Array.isArray(clientsData) ? clientsData : []);
 
-      // Combine VAPI and ElevenLabs agents
-      const allAgents = [];
-      if (vapiAgentsRes.ok) {
-        const vapiData = await vapiAgentsRes.json();
-        allAgents.push(...(Array.isArray(vapiData) ? vapiData.map(a => ({ ...a, platform: 'vapi' })) : []));
-      }
+      // Only ElevenLabs agents
       if (elevenLabsAgentsRes.ok) {
         const elevenData = await elevenLabsAgentsRes.json();
-        allAgents.push(...(Array.isArray(elevenData) ? elevenData : []));
+        setAgents(Array.isArray(elevenData) ? elevenData : []);
       }
-      setAgents(allAgents);
     } catch (err) {
       setError(`Error cargando datos: ${err}`);
     } finally {
@@ -173,7 +166,7 @@ export default function AdminDashboard() {
             <p className="text-2xl font-semibold text-amber-400 mt-1">{clients.filter(c => !c.calendarConnected).length}</p>
           </div>
           <div className="rounded-xl bg-[#0f172a] border border-white/10 p-5">
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Agentes IA</p>
+            <p className="text-xs text-slate-500 uppercase tracking-wider">Agentes ElevenLabs</p>
             <p className="text-2xl font-semibold text-blue-400 mt-1">{agents.length}</p>
           </div>
         </div>
@@ -185,15 +178,15 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* VAPI Agents Section */}
+        {/* ElevenLabs Agents Section */}
         <div className="mb-8">
           <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Icon icon="solar:microphone-3-linear" width={18} className="text-blue-400" />
-            Agentes IA (VAPI + ElevenLabs)
+            Agentes ElevenLabs
           </h2>
           {agents.length === 0 ? (
             <div className="rounded-xl bg-[#0f172a] border border-white/10 p-6 text-center">
-              <p className="text-sm text-slate-400">No hay agentes en VAPI o ElevenLabs.</p>
+              <p className="text-sm text-slate-400">No hay agentes en ElevenLabs.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -206,14 +199,9 @@ export default function AdminDashboard() {
                         <p className="text-sm font-medium text-white truncate">{agent.name}</p>
                         <p className="text-[10px] text-slate-600 font-mono mt-0.5">{agent.id.slice(0, 16)}...</p>
                       </div>
-                      <div className="flex gap-1">
-                        <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-0.5 rounded">
-                          {agent.platform === 'elevenlabs' ? 'ElevenLabs' : 'VAPI'}
-                        </span>
-                        {agent.model && (
-                          <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-0.5 rounded">{agent.model}</span>
-                        )}
-                      </div>
+                      <span className="text-[10px] text-slate-500 bg-blue-500/10 px-2 py-0.5 rounded">
+                        ElevenLabs
+                      </span>
                     </div>
                     {assignedTo ? (
                       <div className="mt-3 flex items-center gap-1.5 text-[11px] text-emerald-400">

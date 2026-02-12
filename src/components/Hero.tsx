@@ -16,11 +16,67 @@ export default function Hero() {
 
     const startConversation = () => {
         const existingWidget = document.querySelector('elevenlabs-convai');
-        if (!existingWidget) {
-            const widget = document.createElement('elevenlabs-convai');
-            widget.setAttribute('agent-id', 'agent_3001kh1q24d0ezpvn26m4s6vtxsr');
-            document.body.appendChild(widget);
-        }
+        if (existingWidget) return;
+
+        const widget = document.createElement('elevenlabs-convai');
+        widget.setAttribute('agent-id', 'agent_5801kh1zs5kbfpkrk059x3hqet8v'); // Updated ID with tools
+        document.body.appendChild(widget);
+
+        // Client-side tool handling
+        widget.addEventListener('elevenlabs-convai:call', async (event: any) => {
+            const { name, parameters, request_id } = event.detail;
+            console.log('Tool called:', name, parameters);
+
+            try {
+                let result = {};
+                if (name === 'checkAvailability') {
+                    const response = await fetch('/api/check-availability', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(parameters)
+                    });
+                    result = await response.json();
+                } else if (name === 'scheduleMeeting') {
+                    const response = await fetch('/api/schedule-meeting', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(parameters)
+                    });
+                    result = await response.json();
+                } else if (name === 'createLead') {
+                    const response = await fetch('/api/create-lead', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(parameters)
+                    });
+                    result = await response.json();
+                } else {
+                    console.warn(`Unknown tool called: ${name}`);
+                    return;
+                }
+
+                // Send response back to agent
+                // Note: The widget automatically handles the response if we return it? 
+                // Or do we need to call a method? Documentation for client tools says:
+                // "The widget will emit a 'elevenlabs-convai:call' event... 
+                // You must respond by calling the .reply() method on the widget."
+
+                // Let's try sending the response back via the element method if it exists
+                // Based on standard ElevenLabs widget behavior for client tools:
+                if (widget && (widget as any).reply) {
+                    (widget as any).reply(request_id, result);
+                } else {
+                    // Start a custom event dispatch if method not found (fallback)
+                    console.log('Tool Result:', result);
+                }
+
+            } catch (error) {
+                console.error('Error executing tool:', error);
+                if (widget && (widget as any).reply) {
+                    (widget as any).reply(request_id, { error: 'Failed to execute tool' });
+                }
+            }
+        });
     };
 
     return (
