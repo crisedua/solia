@@ -35,6 +35,26 @@ REGLAS:
           llm: 'gemini-2.5-flash',
           temperature: 0.0,
           max_tokens: -1,
+          tools: [
+            {
+              type: 'webhook',
+              name: 'saveCaller',
+              description: 'Guarda la informacion del cliente en Google Sheets. Llamar despues de obtener nombre, email y telefono.',
+              url: `${baseApiUrl}/api/calendar/${clientId}?action=saveCaller`,
+              method: 'POST',
+              response_timeout_secs: 20,
+              parameters: {
+                type: 'object',
+                required: ['caller_name'],
+                properties: {
+                  caller_name: { type: 'string', description: 'Nombre completo del cliente' },
+                  caller_email: { type: 'string', description: 'Email del cliente' },
+                  caller_phone: { type: 'string', description: 'Telefono del cliente' },
+                  notes: { type: 'string', description: 'Notas sobre la conversacion: tipo de propiedad, operacion, comuna, presupuesto' },
+                },
+              },
+            },
+          ],
         },
         first_message: 'Hola, bienvenido a Vista Costa. Como te puedo ayudar hoy?',
       },
@@ -54,7 +74,7 @@ REGLAS:
   };
 
   try {
-    // Create agent
+    // Create agent with tools included
     const createResponse = await fetch('https://api.elevenlabs.io/v1/convai/agents', {
       method: 'POST',
       headers,
@@ -70,44 +90,6 @@ REGLAS:
     const agentId = agent.agent_id;
 
     console.log(`[ElevenLabs] Created agent ${agentId} for ${client.business}`);
-
-    // Add tools to the agent
-    const tools = [
-      {
-        type: 'webhook',
-        name: 'saveCaller',
-        description: 'Guarda la informacion del cliente en Google Sheets. Llamar despues de obtener nombre, email y telefono.',
-        url: `${baseApiUrl}/api/calendar/${clientId}?action=saveCaller`,
-        method: 'POST',
-        response_timeout_secs: 20,
-        parameters: {
-          type: 'object',
-          required: ['caller_name'],
-          properties: {
-            caller_name: { type: 'string', description: 'Nombre completo del cliente' },
-            caller_email: { type: 'string', description: 'Email del cliente' },
-            caller_phone: { type: 'string', description: 'Telefono del cliente' },
-            notes: { type: 'string', description: 'Notas sobre la conversacion: tipo de propiedad, operacion, comuna, presupuesto' },
-          },
-        },
-      },
-    ];
-
-    // Add each tool
-    for (const tool of tools) {
-      const toolResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}/add-tool`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(tool),
-      });
-
-      if (!toolResponse.ok) {
-        const error = await toolResponse.json();
-        console.error(`[ElevenLabs] Failed to add tool ${tool.name}:`, error);
-      } else {
-        console.log(`[ElevenLabs] Added tool ${tool.name} to agent ${agentId}`);
-      }
-    }
 
     return agentId;
   } catch (err) {
