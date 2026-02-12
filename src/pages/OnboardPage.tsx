@@ -157,6 +157,10 @@ export default function OnboardPage() {
                     <Icon icon="logos:google-gmail" width={20} />
                     <span>Enviar confirmaciones y recordatorios</span>
                   </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-300 bg-white/5 rounded-lg p-3">
+                    <Icon icon="vscode-icons:file-type-excel" width={20} />
+                    <span>Guardar contactos en Google Sheets</span>
+                  </div>
                 </div>
                 <button onClick={handleConnect}
                   className="w-full py-3.5 rounded-xl bg-white text-[#0f172a] text-sm font-semibold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
@@ -164,7 +168,7 @@ export default function OnboardPage() {
                   Conectar con Google
                 </button>
                 <p className="text-[11px] text-slate-600 text-center">
-                  Solo solicitamos acceso al calendario y correo. Tus datos están encriptados y nunca se comparten.
+                  Solicitamos acceso a Calendar, Gmail y Sheets. Tus datos están encriptados y nunca se comparten.
                 </p>
               </div>
             </>
