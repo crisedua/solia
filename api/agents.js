@@ -58,7 +58,7 @@ Tu trabajo es:
 
 REGLAS IMPORTANTES:
 - La zona horaria es America/Santiago (Chile). NO preguntes por zona horaria.
-- Cuando el llamante quiera agendar una cita, usa checkAvailability con los próximos 3 días para obtener horarios libres.
+- Cuando el llamante quiera agendar una cita, PRIMERO dile "Un momento, déjame revisar la disponibilidad" y LUEGO usa checkAvailability con los próximos 3 días para obtener horarios libres. Hoy es ${new Date().toISOString().split('T')[0]}.
 - De todos los horarios disponibles, elige SOLO 3 opciones variadas (diferentes días y horas) y preséntalas al llamante. Por ejemplo: "Tengo disponible mañana a las 10, el jueves a las 15, o el viernes a las 11. ¿Cuál le acomoda?"
 - NO muestres todos los horarios disponibles, solo 3 alternativas.
 - Una vez que el llamante elija, confirma nombre, correo y teléfono, y usa scheduleMeeting para agendar.
@@ -71,6 +71,7 @@ Contacto: ${client.name}`;
 
       try {
         await vapiPatch(agentId, {
+          silenceTimeoutSeconds: 60,
           model: {
             provider: 'openai',
             model: 'gpt-4o',
@@ -89,7 +90,7 @@ Contacto: ${client.name}`;
                     required: ['dates'],
                   },
                 },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability` },
+                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability`, timeoutSeconds: 30 },
               },
               {
                 type: 'function',
@@ -108,7 +109,7 @@ Contacto: ${client.name}`;
                     required: ['date', 'time', 'caller_name'],
                   },
                 },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
+                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule`, timeoutSeconds: 30 },
               },
               {
                 type: 'function',
@@ -126,7 +127,7 @@ Contacto: ${client.name}`;
                     required: ['caller_name'],
                   },
                 },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=saveCaller` },
+                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=saveCaller`, timeoutSeconds: 30 },
               },
             ],
           },
