@@ -176,10 +176,25 @@ async function handleAvailability(req, res, oauth2Client, clientId) {
     return res.json(vapiResponse(`No hay horarios disponibles en las fechas consultadas.`, toolCallId, toolName));
   }
   
-  // Format as plain text list for the agent to read
+  // Format with day names for better agent understanding
+  const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   let responseText = 'Horarios disponibles:\n';
-  for (const [date, slots] of Object.entries(allAvailability)) {
-    responseText += `${date}: ${slots.join(', ')}\n`;
+  for (const [dateStr, slots] of Object.entries(allAvailability)) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const dayName = dayNames[date.getDay()];
+    
+    // Calculate relative day
+    const diffDays = Math.round((date - today) / (1000 * 60 * 60 * 24));
+    let relativeDay = '';
+    if (diffDays === 0) relativeDay = 'HOY';
+    else if (diffDays === 1) relativeDay = 'MAÑANA';
+    else relativeDay = dayName.toUpperCase();
+    
+    responseText += `${relativeDay} (${dateStr}): ${slots.join(', ')}\n`;
   }
   
   return res.json(vapiResponse(responseText, toolCallId, toolName));
