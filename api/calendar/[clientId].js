@@ -4,31 +4,45 @@ import { createOAuth2Client } from '../lib/google.js';
 
 /**
  * Extract parameters and toolCallId from VAPI tool call or direct request.
- * VAPI sends: { message: { type: "tool-calls", toolCallList: [{ id, name, parameters }] } }
+ * VAPI sends: { message: { type: "tool-calls", toolCallList: [...], toolWithToolCallList: [...] } }
  */
 function extractParams(req) {
   const body = req.body || {};
-  // VAPI tool-calls format
-  if (body.message?.toolCallList?.[0]?.parameters) {
+  const msg = body.message || {};
+
+  // VAPI tool-calls format (toolCallList)
+  if (msg.toolCallList?.[0]) {
+    const tc = msg.toolCallList[0];
     return {
-      params: body.message.toolCallList[0].parameters,
-      toolCallId: body.message.toolCallList[0].id,
-      toolName: body.message.toolCallList[0].name,
+      params: tc.parameters || {},
+      toolCallId: tc.id,
+      toolName: tc.name,
+    };
+  }
+  // VAPI tool-calls format (toolWithToolCallList)
+  if (msg.toolWithToolCallList?.[0]?.toolCall) {
+    const tc = msg.toolWithToolCallList[0].toolCall;
+    return {
+      params: tc.parameters || {},
+      toolCallId: tc.id,
+      toolName: msg.toolWithToolCallList[0].name,
     };
   }
   // VAPI older function-call format
-  if (body.message?.functionCall?.parameters) {
-    return { params: body.message.functionCall.parameters, toolCallId: null, toolName: null };
+  if (msg.functionCall?.parameters) {
+    return { params: msg.functionCall.parameters, toolCallId: null, toolName: null };
   }
   // Direct API call
   return { params: body, toolCallId: null, toolName: null };
 }
 
 function vapiResponse(result, toolCallId, toolName) {
+  // VAPI requires result to be a single-line string
+  const resultStr = typeof result === 'string' ? result : JSON.stringify(result).replace(/\n/g, ' ');
   if (toolCallId) {
-    return { results: [{ toolCallId, name: toolName, result: JSON.stringify(result) }] };
+    return { results: [{ toolCallId, name: toolName, result: resultStr }] };
   }
-  return { results: [{ result }] };
+  return { results: [{ result: resultStr }] };
 }
 
 /**
@@ -61,7 +75,7 @@ export default async function handler(req, res) {
   const { clientId } = req.query;
   const action = req.query.action;
 
-  console.log(`Calendar request: clientId=${clientId}, action=${action}, method=${req.method}`);
+  console.log(`Calendar request: clientId=${clientId}, action=${action}, method=${req.method}, body=${JSON.stringify(req.body).slice(0, 500)}`);
 
   try {
     const client = await getClient(clientId);
