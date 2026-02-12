@@ -51,7 +51,7 @@ Contacto: ${client.name}`,
               },
             },
             server: {
-              url: `${baseApiUrl}/api/calendar/${clientId}/availability`,
+              url: `${baseApiUrl}/api/calendar/${clientId}?action=availability`,
             },
           },
           {
@@ -72,7 +72,7 @@ Contacto: ${client.name}`,
               },
             },
             server: {
-              url: `${baseApiUrl}/api/calendar/${clientId}/schedule`,
+              url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule`,
             },
           },
         ],
