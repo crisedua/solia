@@ -173,15 +173,16 @@ async function handleAvailability(req, res, oauth2Client, clientId) {
 
   console.log(`[availability] Result:`, JSON.stringify(allAvailability));
   if (Object.keys(allAvailability).length === 0) {
-    return res.json(vapiResponse(`No encontré horarios disponibles en las fechas consultadas. ¿Quieres que revise otras fechas?`, toolCallId, toolName));
+    return res.json(vapiResponse(`No hay horarios disponibles en las fechas consultadas.`, toolCallId, toolName));
   }
   
-  // Format response in a more conversational way for the agent
-  const dateCount = Object.keys(allAvailability).length;
-  const totalSlots = Object.values(allAvailability).flat().length;
-  const summary = `Encontré ${totalSlots} horarios disponibles en ${dateCount} días. Aquí están los horarios: ${JSON.stringify(allAvailability)}`;
+  // Format as plain text list for the agent to read
+  let responseText = 'Horarios disponibles:\n';
+  for (const [date, slots] of Object.entries(allAvailability)) {
+    responseText += `${date}: ${slots.join(', ')}\n`;
+  }
   
-  return res.json(vapiResponse(summary, toolCallId, toolName));
+  return res.json(vapiResponse(responseText, toolCallId, toolName));
 }
 
 // ---- Main handler ----
