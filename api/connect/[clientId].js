@@ -16,6 +16,7 @@ export default async function handler(req, res) {
       scope: SCOPES,
       state: JSON.stringify({ clientId }),
       prompt: 'consent',
+      include_granted_scopes: false,
     });
 
     res.redirect(authUrl);
