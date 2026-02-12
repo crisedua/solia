@@ -35,8 +35,12 @@ export default async function handler(req, res) {
       if (!client) return res.status(404).json({ error: 'Client not found' });
 
       let agent;
-      try { agent = await vapi.assistants.get(agentId); }
-      catch { return res.status(404).json({ error: 'VAPI agent not found' }); }
+      try {
+        agent = await vapi.assistants.get(agentId);
+      } catch (err) {
+        console.error('VAPI get agent error:', err?.message || err, 'agentId:', agentId);
+        return res.status(404).json({ error: 'VAPI agent not found', detail: err?.message || String(err) });
+      }
 
       // Update agent tools and system prompt to point to this client's calendar
       const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
