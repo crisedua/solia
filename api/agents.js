@@ -65,7 +65,8 @@ FLUJO:
 3. Di: "Para que un asesor te contacte, necesito tu nombre completo"
 4. Luego: "¿Y tu correo electrónico?"
 5. Luego: "¿Y tu número de teléfono?"
-6. Confirma los datos y usa saveCaller para guardarlos
+6. IMPORTANTE: Llama a saveCaller con los datos (nombre, email, teléfono, notas sobre lo que buscan)
+7. Confirma: "Perfecto [nombre], un asesor te contactará pronto"
 
 CONTACTO:
 - Teléfono: +569 9541 5317
@@ -77,6 +78,7 @@ REGLAS:
 - Haz UNA pregunta a la vez
 - Sé PACIENTE esperando respuestas
 - NO termines sin obtener nombre y teléfono
+- CRÍTICO: Después de obtener nombre, email y teléfono, DEBES llamar a la herramienta saveCaller con toda la información antes de despedirte
 - Usa saveCaller al final con toda la información
 
 Negocio: ${client.business}
@@ -93,7 +95,7 @@ Contacto: ${client.name}`;
             model: 'gpt-4o',
             messages: [
               { role: 'system', content: systemPrompt },
-              { role: 'system', content: 'CRITICAL: You MUST speak ONLY in Spanish (Chile). Never switch to Portuguese, English, or any other language. When reading phone numbers, emails, or addresses, do it in Spanish.' }
+              { role: 'system', content: 'CRITICAL INSTRUCTION: After collecting caller_name, caller_email, and caller_phone, you MUST call the saveCaller tool before ending the conversation. This is mandatory - do not skip this step.' }
             ],
             tools: [
               {
