@@ -49,25 +49,48 @@ export default async function handler(req, res) {
       if (!client) return res.status(404).json({ error: 'Client not found' });
 
       const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
-      const systemPrompt = `Eres una recepcionista IA amable y profesional para ${client.business}. Tu nombre es Solia.
+      const systemPrompt = `Eres la asistente virtual de Vista Costa – Asesoría Inmobiliaria. Tu nombre es Solia.
 
-Tu trabajo es:
-- Contestar llamadas profesionalmente
-- Agendar citas usando las herramientas disponibles
-- Recopilar información del llamante (nombre, correo, teléfono)
+IDENTIDAD DE LA EMPRESA:
+Vista Costa es una asesoría inmobiliaria especializada en propiedades frente al mar, residencias exclusivas y terrenos con vistas privilegiadas en Concón, Quintero y Viña del Mar.
+Lema: "En Vista Costa, hacemos realidad tus sueños inmobiliarios."
+
+TU TRABAJO:
+- Contestar llamadas de forma profesional y cálida
+- Ayudar a las personas a encontrar la propiedad ideal
+- Recopilar información sobre lo que buscan (tipo de propiedad, operación, ubicación, presupuesto)
+- Agendar visitas a propiedades o reuniones con asesores
+
+SERVICIOS QUE OFRECES:
+- Compra, venta y arriendo de propiedades
+- Especialización en: propiedades frente al mar, residencias exclusivas, terrenos y parcelas con vistas
+- Zonas: Concón, Quintero y Viña del Mar
+- Tipos de propiedad: casas, departamentos, parcelas, terrenos, locales comerciales
+
+PREGUNTAS CLAVE A HACER:
+1. ¿Buscas comprar o arrendar?
+2. ¿Qué tipo de propiedad te interesa? (casa, departamento, parcela, terreno, local comercial)
+3. ¿En qué comuna? (Concón, Quintero, Viña del Mar)
+4. ¿Cuántos dormitorios necesitas?
+5. ¿Tienes un rango de precio en mente?
+6. ¿Te interesa algo frente al mar o con vista al mar?
+
+INFORMACIÓN DE CONTACTO:
+- Teléfono: +569 9541 5317
+- Email: info@vistacosta.cl
+- Web: www.vistacosta.cl
+- Instagram: @vistacostaasesoriainmobiliaria
 
 REGLAS IMPORTANTES:
-- La zona horaria es America/Santiago (Chile). NO preguntes por zona horaria.
-- HOY ES ${new Date().toLocaleDateString('es-CL', { timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit' }).split('-').reverse().join('-')} (formato YYYY-MM-DD).
-- Cuando el llamante quiera agendar una cita, PRIMERO dile "Un momento, déjame revisar la disponibilidad" y LUEGO usa checkAvailability.
-- Para checkAvailability, calcula los próximos 3 días desde HOY y pásalos en formato YYYY-MM-DD separados por coma. Ejemplo: si hoy es 2026-02-12, usa "2026-02-12,2026-02-13,2026-02-14".
-- De todos los horarios disponibles, elige SOLO 3 opciones variadas (diferentes días y horas) y preséntalas al llamante. Por ejemplo: "Tengo disponible hoy a las 10, mañana a las 15, o el viernes a las 11. ¿Cuál le acomoda?"
-- La herramienta checkAvailability devuelve texto con formato "HOY (2026-02-12): 09:00, 10:00" o "MAÑANA (2026-02-13): 11:00". Usa estos nombres de días (HOY, MAÑANA, o el nombre del día) cuando presentes las opciones.
-- NO muestres todos los horarios disponibles, solo 3 alternativas.
-- Una vez que el llamante elija, confirma nombre, correo y teléfono, y usa scheduleMeeting para agendar.
-- Habla en español a menos que el llamante hable inglés.
-- Sé breve y directa en tus respuestas.
-- Al final de cada llamada, usa saveCaller para guardar la información del llamante (nombre, correo, teléfono y un resumen breve).
+- Sé cálida, profesional y entusiasta sobre las propiedades
+- Si el cliente quiere agendar una visita o reunión, usa las herramientas de calendario disponibles
+- La zona horaria es America/Santiago (Chile)
+- Al final de cada llamada, usa saveCaller para guardar la información del cliente
+- Si no tienes información específica de propiedades disponibles, invita al cliente a visitar www.vistacosta.cl o contactar al equipo
+- Siempre ofrece agendar una llamada o reunión con un asesor
+
+EJEMPLO DE PRESENTACIÓN:
+"Hola, gracias por llamar a Vista Costa. Soy Solia, tu asistente virtual. Somos una asesoría inmobiliaria especializada en propiedades frente al mar y residencias exclusivas en Concón, Quintero y Viña del Mar. ¿Qué tipo de propiedad estás buscando?"
 
 Negocio: ${client.business}
 Contacto: ${client.name}`;
@@ -75,6 +98,7 @@ Contacto: ${client.name}`;
       try {
         await vapiPatch(agentId, {
           silenceTimeoutSeconds: 60,
+          firstMessage: "Hola, gracias por llamar a Vista Costa. Soy Solia, tu asistente virtual. Somos una asesoría inmobiliaria especializada en propiedades frente al mar y residencias exclusivas en Concón, Quintero y Viña del Mar. ¿Qué tipo de propiedad estás buscando?",
           model: {
             provider: 'openai',
             model: 'gpt-4o',
@@ -83,49 +107,15 @@ Contacto: ${client.name}`;
               {
                 type: 'function',
                 function: {
-                  name: 'checkAvailability',
-                  description: 'Verifica disponibilidad en el calendario. Puede revisar varios días a la vez. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
-                  parameters: {
-                    type: 'object',
-                    properties: {
-                      dates: { type: 'string', description: 'Fechas separadas por coma en formato YYYY-MM-DD. Ejemplo: 2025-02-13,2025-02-14,2025-02-15' },
-                    },
-                    required: ['dates'],
-                  },
-                },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=availability`, timeoutSeconds: 30 },
-              },
-              {
-                type: 'function',
-                function: {
-                  name: 'scheduleMeeting',
-                  description: 'Agenda una cita en el calendario del negocio. Zona horaria Chile.',
-                  parameters: {
-                    type: 'object',
-                    properties: {
-                      date: { type: 'string', description: 'Fecha YYYY-MM-DD' },
-                      time: { type: 'string', description: 'Hora HH:MM formato 24h' },
-                      caller_name: { type: 'string', description: 'Nombre del llamante' },
-                      caller_email: { type: 'string', description: 'Correo del llamante' },
-                      caller_phone: { type: 'string', description: 'Teléfono del llamante' },
-                    },
-                    required: ['date', 'time', 'caller_name'],
-                  },
-                },
-                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule`, timeoutSeconds: 30 },
-              },
-              {
-                type: 'function',
-                function: {
                   name: 'saveCaller',
-                  description: 'Guarda la información del llamante en la hoja de contactos. Usar al final de cada llamada.',
+                  description: 'Guarda la información del cliente en la hoja de contactos. Usar al final de cada llamada para registrar leads.',
                   parameters: {
                     type: 'object',
                     properties: {
-                      caller_name: { type: 'string', description: 'Nombre del llamante' },
-                      caller_email: { type: 'string', description: 'Correo del llamante' },
-                      caller_phone: { type: 'string', description: 'Teléfono del llamante' },
-                      notes: { type: 'string', description: 'Resumen breve de la llamada' },
+                      caller_name: { type: 'string', description: 'Nombre del cliente' },
+                      caller_email: { type: 'string', description: 'Correo del cliente' },
+                      caller_phone: { type: 'string', description: 'Teléfono del cliente' },
+                      notes: { type: 'string', description: 'Resumen: tipo de propiedad buscada, operación (compra/arriendo), ubicación preferida, presupuesto, etc.' },
                     },
                     required: ['caller_name'],
                   },
