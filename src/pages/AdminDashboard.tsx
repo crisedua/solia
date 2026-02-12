@@ -117,7 +117,7 @@ export default function AdminDashboard() {
         fetchAll();
       } else {
         const data = await res.json();
-        setError(`Error asignando agente: ${data.error}`);
+        setError(`Error asignando agente: ${data.error}${data.detail ? ' — ' + data.detail : ''}`);
       }
     } catch (err) {
       setError(`Error: ${err}`);
