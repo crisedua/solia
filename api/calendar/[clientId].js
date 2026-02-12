@@ -69,8 +69,8 @@ export default async function handler(req, res) {
 
       for (const date of dates) {
         try {
-          const timeMin = new Date(`${date}T09:00:00-04:00`);
-          const timeMax = new Date(`${date}T18:00:00-04:00`);
+          const timeMin = new Date(`${date}T09:00:00`);
+          const timeMax = new Date(`${date}T18:00:00`);
 
           const response = await calendar.freebusy.query({
             resource: {
@@ -82,6 +82,7 @@ export default async function handler(req, res) {
           });
 
           const busySlots = response.data.calendars?.primary?.busy || [];
+          console.log(`Date ${date}: busy=${JSON.stringify(busySlots)}`);
           const availableSlots = [];
           let current = new Date(timeMin);
           while (current < timeMax) {
@@ -99,6 +100,10 @@ export default async function handler(req, res) {
       }
 
       console.log('Availability result:', JSON.stringify(allAvailability));
+      // Always return at least an empty message so VAPI doesn't error
+      if (Object.keys(allAvailability).length === 0) {
+        return res.json({ results: [{ result: { message: 'No hay horarios disponibles en las fechas consultadas', dates_checked: dates } }] });
+      }
       return res.json({ results: [{ result: allAvailability }] });
     }
 
@@ -111,7 +116,7 @@ export default async function handler(req, res) {
         return res.json({ results: [{ error: 'date and time required' }] });
       }
 
-      const startTime = new Date(`${date}T${time}:00-04:00`);
+      const startTime = new Date(`${date}T${time}:00`);
       const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
 
       const event = {
