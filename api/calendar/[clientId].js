@@ -113,7 +113,8 @@ async function appendToSheet(auth, client, data) {
 // ---- Availability handler (isolated to prevent sheet errors from crashing it) ----
 async function handleAvailability(req, res, oauth2Client, clientId) {
   const { params, toolCallId, toolName } = extractParams(req);
-  console.log(`[availability] clientId=${clientId}, params=${JSON.stringify(params)}, query=${JSON.stringify(req.query)}`);
+  console.log(`[availability] FULL REQUEST BODY: ${JSON.stringify(req.body)}`);
+  console.log(`[availability] clientId=${clientId}, params=${JSON.stringify(params)}, query=${JSON.stringify(req.query)}, toolCallId=${toolCallId}`);
 
   const datesParam = req.query.dates || req.query.date || params.dates || params.date;
   if (!datesParam) {
@@ -168,9 +169,15 @@ async function handleAvailability(req, res, oauth2Client, clientId) {
 
   console.log(`[availability] Result:`, JSON.stringify(allAvailability));
   if (Object.keys(allAvailability).length === 0) {
-    return res.json(vapiResponse(`No hay horarios disponibles en las fechas consultadas: ${dates.join(', ')}`, toolCallId, toolName));
+    return res.json(vapiResponse(`No encontré horarios disponibles en las fechas consultadas. ¿Quieres que revise otras fechas?`, toolCallId, toolName));
   }
-  return res.json(vapiResponse(allAvailability, toolCallId, toolName));
+  
+  // Format response in a more conversational way for the agent
+  const dateCount = Object.keys(allAvailability).length;
+  const totalSlots = Object.values(allAvailability).flat().length;
+  const summary = `Encontré ${totalSlots} horarios disponibles en ${dateCount} días. Aquí están los horarios: ${JSON.stringify(allAvailability)}`;
+  
+  return res.json(vapiResponse(summary, toolCallId, toolName));
 }
 
 // ---- Main handler ----
