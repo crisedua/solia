@@ -2,7 +2,28 @@ import { google } from 'googleapis';
 import { getClient } from '../lib/store.js';
 import { createOAuth2Client } from '../lib/google.js';
 
+/**
+ * Extract parameters from VAPI tool call or direct request.
+ * VAPI sends: { message: { type: "function-call", functionCall: { name, parameters } } }
+ * Direct sends: { date, time, ... }
+ */
+function extractParams(req) {
+  const body = req.body || {};
+  // VAPI server tool format
+  if (body.message?.functionCall?.parameters) {
+    return body.message.functionCall.parameters;
+  }
+  // Direct API call
+  return body;
+}
+
 export default async function handler(req, res) {
+  // CORS for VAPI
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
   const { clientId } = req.query;
   const action = req.query.action;
 
@@ -18,7 +39,8 @@ export default async function handler(req, res) {
 
     // Availability
     if (action === 'availability') {
-      const date = req.query.date || req.body?.date;
+      const params = extractParams(req);
+      const date = req.query.date || params.date;
       if (!date) return res.status(400).json({ error: 'date required (YYYY-MM-DD)' });
 
       const timeMin = new Date(`${date}T09:00:00`);
@@ -31,7 +53,7 @@ export default async function handler(req, res) {
         },
       });
 
-      const busySlots = response.data.calendars.primary.busy;
+      const busySlots = response.data.calendars?.primary?.busy || [];
       const availableSlots = [];
       let current = new Date(timeMin);
       while (current < timeMax) {
@@ -40,13 +62,15 @@ export default async function handler(req, res) {
         if (!isBusy) availableSlots.push(current.toTimeString().slice(0, 5));
         current = next;
       }
-      return res.json({ date, available_slots: availableSlots });
+
+      // Return in VAPI-compatible format
+      return res.json({ results: [{ result: { date, available_slots: availableSlots } }] });
     }
 
     // Schedule
     if (action === 'schedule') {
-      if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
-      const { date, time, caller_name, caller_email, caller_phone } = req.body || {};
+      const params = extractParams(req);
+      const { date, time, caller_name, caller_email, caller_phone } = params;
       if (!date || !time) return res.status(400).json({ error: 'date and time required' });
 
       const startTime = new Date(`${date}T${time}:00`);
@@ -61,7 +85,9 @@ export default async function handler(req, res) {
       };
 
       const result = await calendar.events.insert({ calendarId: 'primary', resource: event, sendUpdates: 'all' });
-      return res.json({ success: true, message: `Cita agendada para ${caller_name || 'cliente'} el ${date} a las ${time}`, event_link: result.data.htmlLink });
+
+      // Return in VAPI-compatible format
+      return res.json({ results: [{ result: { success: true, message: `Cita agendada para ${caller_name || 'cliente'} el ${date} a las ${time}`, event_link: result.data.htmlLink } }] });
     }
 
     return res.status(400).json({ error: 'Invalid action. Use ?action=availability|schedule' });

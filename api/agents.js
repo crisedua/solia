@@ -38,21 +38,41 @@ export default async function handler(req, res) {
       try { agent = await vapi.assistants.get(agentId); }
       catch { return res.status(404).json({ error: 'VAPI agent not found' }); }
 
-      // Update agent tools to point to this client's calendar
+      // Update agent tools and system prompt to point to this client's calendar
       const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
       try {
+        const systemPrompt = `Eres una recepcionista IA amable y profesional para ${client.business}. Tu nombre es Solia.
+
+Tu trabajo es:
+- Contestar llamadas profesionalmente
+- Verificar disponibilidad en el calendario cuando alguien quiera agendar una cita
+- Agendar citas usando las herramientas disponibles
+- Recopilar información del llamante (nombre, correo, teléfono)
+
+REGLAS IMPORTANTES:
+- La zona horaria es America/Santiago (Chile). NO preguntes por zona horaria.
+- Cuando el llamante pida una cita, pregunta la fecha deseada y usa checkAvailability para ver horarios libres.
+- Presenta los horarios disponibles y deja que el llamante elija.
+- Una vez confirmado, usa scheduleMeeting para agendar.
+- Siempre confirma nombre, correo y teléfono antes de agendar.
+- Habla en español a menos que el llamante hable inglés.
+
+Negocio: ${client.business}
+Contacto: ${client.name}`;
+
         await vapi.assistants.update(agentId, {
           model: {
             ...agent.model,
+            messages: [{ role: 'system', content: systemPrompt }],
             tools: [
               {
                 type: 'function',
                 function: {
                   name: 'checkAvailability',
-                  description: 'Verifica disponibilidad en el calendario para una fecha.',
+                  description: 'Verifica disponibilidad en el calendario para una fecha. Devuelve horarios disponibles entre 09:00 y 18:00 hora Chile.',
                   parameters: {
                     type: 'object',
-                    properties: { date: { type: 'string', description: 'Fecha YYYY-MM-DD' } },
+                    properties: { date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' } },
                     required: ['date'],
                   },
                 },
@@ -62,17 +82,17 @@ export default async function handler(req, res) {
                 type: 'function',
                 function: {
                   name: 'scheduleMeeting',
-                  description: 'Agenda una cita en el calendario.',
+                  description: 'Agenda una cita en el calendario del negocio. Zona horaria Chile.',
                   parameters: {
                     type: 'object',
                     properties: {
                       date: { type: 'string', description: 'Fecha YYYY-MM-DD' },
-                      time: { type: 'string', description: 'Hora HH:MM 24h' },
+                      time: { type: 'string', description: 'Hora HH:MM formato 24h' },
                       caller_name: { type: 'string', description: 'Nombre del llamante' },
                       caller_email: { type: 'string', description: 'Correo del llamante' },
                       caller_phone: { type: 'string', description: 'Teléfono del llamante' },
                     },
-                    required: ['date', 'time'],
+                    required: ['date', 'time', 'caller_name'],
                   },
                 },
                 server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
