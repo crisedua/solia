@@ -23,13 +23,24 @@ export async function upsertClient(clientId, updates) {
   const row = toDbFormat(merged);
   row.id = clientId;
 
+  // Remove fields that might not exist as columns yet
+  const safeRow = { ...row };
+
   const { data, error } = await supabase
     .from('clients')
-    .upsert(row, { onConflict: 'id' })
+    .upsert(safeRow, { onConflict: 'id' })
     .select()
     .single();
 
   if (error) {
+    // If column doesn't exist, retry without it
+    if (error.message?.includes('column') || error.message?.includes('schema')) {
+      console.warn('Supabase column error, retrying without sheet_id:', error.message);
+      delete safeRow.sheet_id;
+      const retry = await supabase.from('clients').upsert(safeRow, { onConflict: 'id' }).select().single();
+      if (retry.error) throw retry.error;
+      return toAppFormat(retry.data);
+    }
     console.error('Supabase upsert error:', error);
     throw error;
   }
