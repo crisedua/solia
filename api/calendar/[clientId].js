@@ -45,25 +45,69 @@ function vapiResponse(result, toolCallId, toolName) {
   return { results: [{ result: resultStr }] };
 }
 
-/**
- * Get an authenticated calendar client, handling token refresh.
- */
-async function getCalendarClient(clientId, tokens) {
-  const oauth2Client = createOAuth2Client();
-  oauth2Client.setCredentials(tokens);
+const SHEET_NAME = 'Sol-IA Llamadas';
+const HEADERS = ['Fecha', 'Hora', 'Nombre', 'Email', 'Teléfono', 'Tipo', 'Notas'];
 
-  // Listen for token refresh and save new tokens
-  oauth2Client.on('tokens', async (newTokens) => {
-    console.log('Tokens refreshed for client:', clientId);
-    const updated = { ...tokens, ...newTokens };
+async function getOrCreateSheet(auth, client) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const sheetId = client.sheetId;
+
+  // If we already have a sheet ID, verify it exists
+  if (sheetId) {
     try {
-      await upsertClient(clientId, { tokens: updated });
-    } catch (err) {
-      console.error('Failed to save refreshed tokens:', err.message);
+      await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+      return sheetId;
+    } catch (e) {
+      // Sheet was deleted, create a new one
     }
+  }
+
+  // Create new spreadsheet
+  const spreadsheet = await sheets.spreadsheets.create({
+    resource: {
+      properties: { title: `${client.business} - Sol-IA Contactos` },
+      sheets: [{ properties: { title: SHEET_NAME } }],
+    },
   });
 
-  return google.calendar({ version: 'v3', auth: oauth2Client });
+  const newSheetId = spreadsheet.data.spreadsheetId;
+
+  // Add headers
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: newSheetId,
+    range: `${SHEET_NAME}!A1:G1`,
+    valueInputOption: 'RAW',
+    resource: { values: [HEADERS] },
+  });
+
+  // Save sheet ID to client record
+  await upsertClient(client.id, { sheetId: newSheetId });
+  console.log(`Created sheet ${newSheetId} for client ${client.id}`);
+
+  return newSheetId;
+}
+
+async function appendToSheet(auth, client, data) {
+  const sheetId = await getOrCreateSheet(auth, client);
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  const now = new Date();
+  const row = [
+    now.toLocaleDateString('es-CL'),
+    now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+    data.caller_name || '',
+    data.caller_email || '',
+    data.caller_phone || '',
+    data.type || 'Llamada',
+    data.notes || data.date ? `Cita: ${data.date} ${data.time || ''}` : '',
+  ];
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range: `${SHEET_NAME}!A:G`,
+    valueInputOption: 'RAW',
+    resource: { values: [row] },
+  });
 }
 
 export default async function handler(req, res) {
@@ -84,7 +128,16 @@ export default async function handler(req, res) {
       return res.json({ results: [{ error: 'Client not connected to Google Calendar' }] });
     }
 
-    const calendar = await getCalendarClient(clientId, client.tokens);
+    const oauth2Client = createOAuth2Client();
+    oauth2Client.setCredentials(client.tokens);
+
+    // Listen for token refresh
+    oauth2Client.on('tokens', async (newTokens) => {
+      console.log('Tokens refreshed for client:', clientId);
+      try { await upsertClient(clientId, { tokens: { ...client.tokens, ...newTokens } }); } catch (e) { console.error('Token save error:', e.message); }
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
     // Availability (supports multiple dates)
     if (action === 'availability') {
@@ -160,7 +213,29 @@ export default async function handler(req, res) {
       };
 
       const result = await calendar.events.insert({ calendarId: 'primary', resource: event, sendUpdates: 'all' });
+
+      // Also log to Google Sheet
+      try {
+        await appendToSheet(oauth2Client, client, { caller_name, caller_email, caller_phone, date, time, type: 'Cita agendada' });
+      } catch (err) {
+        console.error('Sheet log error:', err.message);
+      }
+
       return res.json(vapiResponse({ success: true, message: `Cita agendada para ${caller_name || 'cliente'} el ${date} a las ${time}`, event_link: result.data.htmlLink }, toolCallId, toolName));
+    }
+
+    // Save caller to Google Sheet
+    if (action === 'saveCaller') {
+      const { params, toolCallId, toolName } = extractParams(req);
+      const { caller_name, caller_email, caller_phone, notes } = params;
+
+      try {
+        await appendToSheet(oauth2Client, client, { caller_name, caller_email, caller_phone, notes, type: 'Llamada' });
+        return res.json(vapiResponse({ success: true, message: `Contacto ${caller_name || 'desconocido'} guardado en la hoja de cálculo` }, toolCallId, toolName));
+      } catch (err) {
+        console.error('Sheet save error:', err.message);
+        return res.json(vapiResponse({ error: `No se pudo guardar: ${err.message}` }, toolCallId, toolName));
+      }
     }
 
     // Debug endpoint

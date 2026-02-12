@@ -70,6 +70,7 @@ function toAppFormat(row) {
     connectedEmail: row.connected_email,
     connectedAt: row.connected_at,
     createdAt: row.created_at,
+    sheetId: row.sheet_id,
   };
 }
 
@@ -88,5 +89,6 @@ function toDbFormat(obj) {
   if (obj.connectedEmail !== undefined) row.connected_email = obj.connectedEmail;
   if (obj.connectedAt !== undefined) row.connected_at = obj.connectedAt;
   if (obj.createdAt !== undefined) row.created_at = obj.createdAt;
+  if (obj.sheetId !== undefined) row.sheet_id = obj.sheetId;
   return row;
 }

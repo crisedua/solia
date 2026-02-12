@@ -64,6 +64,7 @@ REGLAS IMPORTANTES:
 - Una vez que el llamante elija, confirma nombre, correo y teléfono, y usa scheduleMeeting para agendar.
 - Habla en español a menos que el llamante hable inglés.
 - Sé breve y directa en tus respuestas.
+- Al final de cada llamada, usa saveCaller para guardar la información del llamante (nombre, correo, teléfono y un resumen breve).
 
 Negocio: ${client.business}
 Contacto: ${client.name}`;
@@ -108,6 +109,24 @@ Contacto: ${client.name}`;
                   },
                 },
                 server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=schedule` },
+              },
+              {
+                type: 'function',
+                function: {
+                  name: 'saveCaller',
+                  description: 'Guarda la información del llamante en la hoja de contactos. Usar al final de cada llamada.',
+                  parameters: {
+                    type: 'object',
+                    properties: {
+                      caller_name: { type: 'string', description: 'Nombre del llamante' },
+                      caller_email: { type: 'string', description: 'Correo del llamante' },
+                      caller_phone: { type: 'string', description: 'Teléfono del llamante' },
+                      notes: { type: 'string', description: 'Resumen breve de la llamada' },
+                    },
+                    required: ['caller_name'],
+                  },
+                },
+                server: { url: `${baseApiUrl}/api/calendar/${clientId}?action=saveCaller` },
               },
             ],
           },
