@@ -127,13 +127,17 @@ async function handleAvailability(req, res, oauth2Client, clientId) {
 
   for (const date of dates) {
     try {
-      const timeMin = new Date(`${date}T09:00:00-03:00`);
-      const timeMax = new Date(`${date}T18:00:00-03:00`);
+      // Parse date and create times in Santiago timezone
+      const [year, month, day] = date.split('-').map(Number);
+      const timeMin = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // 09:00 Santiago = 12:00 UTC
+      const timeMax = new Date(Date.UTC(year, month - 1, day, 21, 0, 0)); // 18:00 Santiago = 21:00 UTC
 
       if (isNaN(timeMin.getTime()) || isNaN(timeMax.getTime())) {
         console.error(`[availability] Invalid date: ${date}`);
         continue;
       }
+
+      console.log(`[availability] Checking ${date}: ${timeMin.toISOString()} to ${timeMax.toISOString()}`);
 
       const response = await calendar.freebusy.query({
         resource: {
