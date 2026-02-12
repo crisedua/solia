@@ -3,15 +3,32 @@ import { getClient, upsertClient } from '../lib/store.js';
 import { createOAuth2Client } from '../lib/google.js';
 
 /**
- * Extract parameters from VAPI tool call or direct request.
- * VAPI sends: { message: { type: "function-call", functionCall: { name, parameters } } }
+ * Extract parameters and toolCallId from VAPI tool call or direct request.
+ * VAPI sends: { message: { type: "tool-calls", toolCallList: [{ id, name, parameters }] } }
  */
 function extractParams(req) {
   const body = req.body || {};
-  if (body.message?.functionCall?.parameters) {
-    return body.message.functionCall.parameters;
+  // VAPI tool-calls format
+  if (body.message?.toolCallList?.[0]?.parameters) {
+    return {
+      params: body.message.toolCallList[0].parameters,
+      toolCallId: body.message.toolCallList[0].id,
+      toolName: body.message.toolCallList[0].name,
+    };
   }
-  return body;
+  // VAPI older function-call format
+  if (body.message?.functionCall?.parameters) {
+    return { params: body.message.functionCall.parameters, toolCallId: null, toolName: null };
+  }
+  // Direct API call
+  return { params: body, toolCallId: null, toolName: null };
+}
+
+function vapiResponse(result, toolCallId, toolName) {
+  if (toolCallId) {
+    return { results: [{ toolCallId, name: toolName, result: JSON.stringify(result) }] };
+  }
+  return { results: [{ result }] };
 }
 
 /**
@@ -57,11 +74,12 @@ export default async function handler(req, res) {
 
     // Availability (supports multiple dates)
     if (action === 'availability') {
-      const params = extractParams(req);
+      const { params, toolCallId, toolName } = extractParams(req);
+      console.log('Availability raw body:', JSON.stringify(req.body));
       console.log('Availability params:', JSON.stringify(params));
       const datesParam = req.query.dates || req.query.date || params.dates || params.date;
       if (!datesParam) {
-        return res.json({ results: [{ error: 'dates parameter required' }] });
+        return res.json(vapiResponse({ error: 'dates parameter required' }, toolCallId, toolName));
       }
 
       const dates = String(datesParam).split(',').map(d => d.trim()).filter(Boolean).slice(0, 5);
@@ -101,20 +119,19 @@ export default async function handler(req, res) {
       }
 
       console.log('Availability result:', JSON.stringify(allAvailability));
-      // Always return at least an empty message so VAPI doesn't error
       if (Object.keys(allAvailability).length === 0) {
-        return res.json({ results: [{ result: { message: 'No hay horarios disponibles en las fechas consultadas', dates_checked: dates } }] });
+        return res.json(vapiResponse({ message: 'No hay horarios disponibles en las fechas consultadas', dates_checked: dates }, toolCallId, toolName));
       }
-      return res.json({ results: [{ result: allAvailability }] });
+      return res.json(vapiResponse(allAvailability, toolCallId, toolName));
     }
 
     // Schedule
     if (action === 'schedule') {
-      const params = extractParams(req);
+      const { params, toolCallId, toolName } = extractParams(req);
       console.log('Schedule params:', JSON.stringify(params));
       const { date, time, caller_name, caller_email, caller_phone } = params;
       if (!date || !time) {
-        return res.json({ results: [{ error: 'date and time required' }] });
+        return res.json(vapiResponse({ error: 'date and time required' }, toolCallId, toolName));
       }
 
       const startTime = new Date(`${date}T${time}:00`);
@@ -129,7 +146,7 @@ export default async function handler(req, res) {
       };
 
       const result = await calendar.events.insert({ calendarId: 'primary', resource: event, sendUpdates: 'all' });
-      return res.json({ results: [{ result: { success: true, message: `Cita agendada para ${caller_name || 'cliente'} el ${date} a las ${time}`, event_link: result.data.htmlLink } }] });
+      return res.json(vapiResponse({ success: true, message: `Cita agendada para ${caller_name || 'cliente'} el ${date} a las ${time}`, event_link: result.data.htmlLink }, toolCallId, toolName));
     }
 
     // Debug endpoint
