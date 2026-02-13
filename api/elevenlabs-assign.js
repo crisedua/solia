@@ -1,5 +1,4 @@
 import { upsertClient, getClient } from './lib/store.js';
-import { createElevenLabsAgent } from './lib/elevenlabs.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,9 +15,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { clientId } = req.body || {};
-    if (!clientId) {
-      return res.status(400).json({ error: 'clientId required' });
+    const { clientId, agentId } = req.body || {};
+    if (!clientId || !agentId) {
+      return res.status(400).json({ error: 'clientId and agentId required' });
     }
 
     const client = await getClient(clientId);
@@ -30,28 +29,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Client must connect Google Calendar first' });
     }
 
-    const baseApiUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
-    
-    console.log(`[ElevenLabs Assign] Creating agent for client ${clientId} (${client.business})`);
-    
-    try {
-      const agentId = await createElevenLabsAgent(clientId, client, baseApiUrl);
-      
-      const updated = await upsertClient(clientId, { 
-        agentId, 
-        agentName: `${client.business} - Vista Costa` 
-      });
+    // Just assign the existing ElevenLabs agent ID
+    // The agent's tools will use clientId from the URL parameter
+    const updated = await upsertClient(clientId, { 
+      agentId, 
+      agentName: `${client.business} - Vista Costa` 
+    });
 
-      return res.json({ 
-        success: true, 
-        agentId,
-        agentName: `${client.business} - Vista Costa`,
-        client: updated 
-      });
-    } catch (createError) {
-      console.error('[ElevenLabs Assign] Agent creation failed:', createError.message);
-      return res.status(500).json({ error: `Failed to create agent: ${createError.message}` });
-    }
+    return res.json({ 
+      success: true, 
+      agentId,
+      agentName: `${client.business} - Vista Costa`,
+      client: updated,
+      message: 'Agent assigned. Configure tools in ElevenLabs dashboard to point to: ' + 
+               `${process.env.APP_BASE_URL || 'https://solia-theta.vercel.app'}/api/calendar/${clientId}?action=saveCaller`
+    });
   } catch (err) {
     console.error('[ElevenLabs Assign] Error:', err);
     return res.status(500).json({ error: err.message });

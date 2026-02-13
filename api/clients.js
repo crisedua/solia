@@ -42,14 +42,34 @@ export default async function handler(req, res) {
       if (req.headers['x-admin-key'] !== process.env.ADMIN_SECRET) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
-      const { name, business, email, phone } = req.body || {};
+      const { name, business, email, phone, agentId } = req.body || {};
       if (!name || !business) return res.status(400).json({ error: 'name and business required' });
 
       const clientId = crypto.randomBytes(12).toString('base64url');
       const baseUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
+      
+      // Find agent name if agentId provided
+      let agentName = null;
+      if (agentId) {
+        try {
+          const agentRes = await fetch('https://api.elevenlabs.io/v1/convai/agents', {
+            headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY },
+          });
+          if (agentRes.ok) {
+            const agentsData = await agentRes.json();
+            const agent = (agentsData.agents || []).find(a => a.agent_id === agentId);
+            agentName = agent ? agent.name : agentId;
+          }
+        } catch (e) {
+          console.error('Failed to fetch agent name:', e);
+        }
+      }
+      
       const client = await upsertClient(clientId, {
         id: clientId, name, business, email: email || '', phone: phone || '',
-        createdAt: Date.now(), agentId: null, agentName: null,
+        createdAt: Date.now(), 
+        agentId: agentId || null, 
+        agentName: agentName || null,
         calendarConnected: false, tokens: null, connectedEmail: null, connectedAt: null,
       });
       return res.json({ client, onboardingUrl: `${baseUrl}/onboard/${clientId}` });

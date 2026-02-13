@@ -36,10 +36,12 @@ export default function AdminDashboard() {
   const [formBusiness, setFormBusiness] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
+  const [formAgentId, setFormAgentId] = useState('');
   const [creating, setCreating] = useState(false);
 
   // Assign agent
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [manualAgentId, setManualAgentId] = useState('');
 
   // Copy state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -87,11 +89,17 @@ export default function AdminDashboard() {
       const res = await fetch('/api/clients?action=create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
-        body: JSON.stringify({ name: formName, business: formBusiness, email: formEmail, phone: formPhone }),
+        body: JSON.stringify({ 
+          name: formName, 
+          business: formBusiness, 
+          email: formEmail, 
+          phone: formPhone,
+          agentId: formAgentId || undefined,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
-        setFormName(''); setFormBusiness(''); setFormEmail(''); setFormPhone('');
+        setFormName(''); setFormBusiness(''); setFormEmail(''); setFormPhone(''); setFormAgentId('');
         setShowForm(false); setError('');
         fetchAll();
       } else {
@@ -105,20 +113,21 @@ export default function AdminDashboard() {
   };
 
   const handleAssign = async (clientId: string) => {
-    setAssigningId(clientId);
+    if (!manualAgentId.trim()) return;
     try {
       const res = await fetch('/api/elevenlabs-assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
-        body: JSON.stringify({ clientId }),
+        body: JSON.stringify({ clientId, agentId: manualAgentId.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
         setAssigningId(null);
+        setManualAgentId('');
         setError('');
         fetchAll();
       } else {
-        setError(`Error creando agente: ${data.error}`);
+        setError(`Error asignando agente: ${data.error}`);
         setAssigningId(null);
       }
     } catch (err) {
@@ -259,6 +268,16 @@ export default function AdminDashboard() {
                   placeholder="+56 9 1234 5678"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
               </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">Agente ElevenLabs (opcional)</label>
+                <select value={formAgentId} onChange={(e) => setFormAgentId(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
+                  <option value="">Sin agente (asignar después)</option>
+                  {agents.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <button onClick={handleCreate}
               disabled={!formName.trim() || !formBusiness.trim() || creating}
@@ -324,21 +343,37 @@ export default function AdminDashboard() {
 
                     {/* Assign agent */}
                     {assigningId === client.id ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400">Creando agente...</span>
-                        <Icon icon="solar:refresh-linear" width={14} className="animate-spin text-blue-400" />
-                        <button onClick={() => setAssigningId(null)}
-                          className="text-xs px-2 py-1.5 rounded-lg text-slate-400 hover:text-white">
-                          <Icon icon="solar:close-circle-linear" width={14} />
-                        </button>
+                      <div className="flex flex-col gap-2 w-full">
+                        <div className="text-[10px] text-slate-400">
+                          1. Crea un agente en ElevenLabs para {client.business}<br/>
+                          2. Configura el tool saveCaller: {window.location.origin}/api/calendar/{client.id}?action=saveCaller<br/>
+                          3. Pega el Agent ID aquí:
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="text" 
+                            value={manualAgentId} 
+                            onChange={(e) => setManualAgentId(e.target.value)}
+                            placeholder="agent_xxxxx..."
+                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
+                          />
+                          <button onClick={() => handleAssign(client.id)} disabled={!manualAgentId.trim()}
+                            className="text-xs px-2 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 disabled:opacity-40">
+                            <Icon icon="solar:check-read-linear" width={14} />
+                          </button>
+                          <button onClick={() => { setAssigningId(null); setManualAgentId(''); }}
+                            className="text-xs px-2 py-1.5 rounded-lg text-slate-400 hover:text-white">
+                            <Icon icon="solar:close-circle-linear" width={14} />
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <button onClick={() => handleAssign(client.id)}
+                      <button onClick={() => setAssigningId(client.id)}
                         disabled={!client.calendarConnected}
                         className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-blue-500/20 text-blue-400 hover:bg-blue-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title={!client.calendarConnected ? 'Cliente debe conectar Google Calendar primero' : ''}>
                         <Icon icon="solar:microphone-3-linear" width={14} />
-                        {client.agentId ? 'Recrear agente' : 'Crear agente'}
+                        {client.agentId ? 'Reasignar agente' : 'Asignar agente'}
                       </button>
                     )}
                   </div>
