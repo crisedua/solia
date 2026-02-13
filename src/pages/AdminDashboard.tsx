@@ -41,7 +41,7 @@ export default function AdminDashboard() {
 
   // Assign agent
   const [assigningId, setAssigningId] = useState<string | null>(null);
-  const [manualAgentId, setManualAgentId] = useState('');
+  const [selectedAgent, setSelectedAgent] = useState('');
 
   // Copy state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -113,17 +113,17 @@ export default function AdminDashboard() {
   };
 
   const handleAssign = async (clientId: string) => {
-    if (!manualAgentId.trim()) return;
+    if (!selectedAgent) return;
     try {
       const res = await fetch('/api/elevenlabs-assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
-        body: JSON.stringify({ clientId, agentId: manualAgentId.trim() }),
+        body: JSON.stringify({ clientId, agentId: selectedAgent }),
       });
       const data = await res.json();
       if (res.ok) {
         setAssigningId(null);
-        setManualAgentId('');
+        setSelectedAgent('');
         setError('');
         fetchAll();
       } else {
@@ -343,29 +343,22 @@ export default function AdminDashboard() {
 
                     {/* Assign agent */}
                     {assigningId === client.id ? (
-                      <div className="flex flex-col gap-2 w-full">
-                        <div className="text-[10px] text-slate-400">
-                          1. Crea un agente en ElevenLabs para {client.business}<br/>
-                          2. Configura el tool saveCaller: {window.location.origin}/api/calendar/{client.id}?action=saveCaller<br/>
-                          3. Pega el Agent ID aquí:
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="text" 
-                            value={manualAgentId} 
-                            onChange={(e) => setManualAgentId(e.target.value)}
-                            placeholder="agent_xxxxx..."
-                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
-                          />
-                          <button onClick={() => handleAssign(client.id)} disabled={!manualAgentId.trim()}
-                            className="text-xs px-2 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 disabled:opacity-40">
-                            <Icon icon="solar:check-read-linear" width={14} />
-                          </button>
-                          <button onClick={() => { setAssigningId(null); setManualAgentId(''); }}
-                            className="text-xs px-2 py-1.5 rounded-lg text-slate-400 hover:text-white">
-                            <Icon icon="solar:close-circle-linear" width={14} />
-                          </button>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}
+                          className="bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500/50 max-w-[160px]">
+                          <option value="">Seleccionar agente</option>
+                          {agents.map(a => (
+                            <option key={a.id} value={a.id}>{a.name}</option>
+                          ))}
+                        </select>
+                        <button onClick={() => handleAssign(client.id)} disabled={!selectedAgent}
+                          className="text-xs px-2 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 disabled:opacity-40">
+                          <Icon icon="solar:check-read-linear" width={14} />
+                        </button>
+                        <button onClick={() => { setAssigningId(null); setSelectedAgent(''); }}
+                          className="text-xs px-2 py-1.5 rounded-lg text-slate-400 hover:text-white">
+                          <Icon icon="solar:close-circle-linear" width={14} />
+                        </button>
                       </div>
                     ) : (
                       <button onClick={() => setAssigningId(client.id)}
