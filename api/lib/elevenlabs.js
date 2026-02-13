@@ -8,6 +8,7 @@ export async function createElevenLabsAgent(clientId, client, baseApiUrl) {
     'Content-Type': 'application/json',
   };
 
+  // Simplified agent config matching ElevenLabs API structure
   const agentConfig = {
     name: `${client.business} - Vista Costa`,
     conversation_config: {
@@ -34,47 +35,18 @@ REGLAS:
 - Contacto: +56 9 9541 5317, info@vistacosta.cl, www.vistacosta.cl`,
           llm: 'gemini-2.5-flash',
           temperature: 0.0,
-          max_tokens: -1,
-          tools: [
-            {
-              type: 'webhook',
-              name: 'saveCaller',
-              description: 'Guarda la informacion del cliente en Google Sheets. Llamar despues de obtener nombre, email y telefono.',
-              url: `${baseApiUrl}/api/calendar/${clientId}?action=saveCaller`,
-              method: 'POST',
-              response_timeout_secs: 20,
-              parameters: {
-                type: 'object',
-                required: ['caller_name'],
-                properties: {
-                  caller_name: { type: 'string', description: 'Nombre completo del cliente' },
-                  caller_email: { type: 'string', description: 'Email del cliente' },
-                  caller_phone: { type: 'string', description: 'Telefono del cliente' },
-                  notes: { type: 'string', description: 'Notas sobre la conversacion: tipo de propiedad, operacion, comuna, presupuesto' },
-                },
-              },
-            },
-          ],
         },
         first_message: 'Hola, bienvenido a Vista Costa. Como te puedo ayudar hoy?',
       },
       tts: {
-        optimize_streaming_latency: 4,
-        stability: 0.5,
-        similarity_boost: 0.75,
-        voice_id: 'pNInz6obpgDQGcFmaJgB', // Adam voice
-      },
-      turn: {
-        turn_timeout: 10.0,
-        silence_end_call_timeout: 30.0,
-        turn_eagerness: 'patient',
-        mode: 'turn',
+        voice_id: 'pNInz6obpgDQGcFmaJgB',
       },
     },
   };
 
   try {
-    // Create agent with tools included
+    console.log('[ElevenLabs] Creating agent with config:', JSON.stringify(agentConfig, null, 2));
+    
     const createResponse = await fetch('https://api.elevenlabs.io/v1/convai/agents', {
       method: 'POST',
       headers,
@@ -82,6 +54,7 @@ REGLAS:
     });
 
     const responseText = await createResponse.text();
+    console.log('[ElevenLabs] API Response:', responseText);
     
     if (!createResponse.ok) {
       console.error('[ElevenLabs] API Error:', responseText);
@@ -96,6 +69,6 @@ REGLAS:
     return agentId;
   } catch (err) {
     console.error('[ElevenLabs] Error creating agent:', err.message);
-    throw err; // Re-throw so the caller can see the actual error
+    throw err;
   }
 }
