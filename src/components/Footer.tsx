@@ -9,7 +9,7 @@ export default function Footer() {
 
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded bg-[#5B5BD6] flex items-center justify-center text-white">
-                            <Icon icon="solar:voice-scan-linear" width="14" />
+                            <Icon icon="solar:lightbulb-bolt-bold-duotone" width="14" />
                         </div>
                         <span className="text-sm font-semibold text-white">Sol-IA</span>
                     </div>

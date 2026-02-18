@@ -4,7 +4,7 @@ export default function Hero() {
 
 
     return (
-        <main className="relative pt-32 pb-12 md:pt-48 md:pb-20 overflow-hidden">
+        <main className="relative pt-24 pb-12 md:pt-32 md:pb-20 overflow-hidden">
             {/* Background Gradients */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] bg-[#5B5BD6]/10 blur-[120px] rounded-full pointer-events-none opacity-60"></div>
             <div className="absolute top-20 left-1/4 w-[300px] h-[300px] bg-purple-300/10 blur-[80px] rounded-full pointer-events-none"></div>
@@ -12,13 +12,7 @@ export default function Hero() {
             <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
 
                 {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ededfc] border border-[#5B5BD6]/20 text-[#5B5BD6] text-xs font-medium mb-8 cursor-default animate-fade-in-up">
-                    <span className="flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5B5BD6] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#5B5BD6]"></span>
-                    </span>
-                    Disponible en Español, Inglés y Portugués
-                </div>
+
 
                 {/* Headline */}
                 <h1 className="text-5xl md:text-7xl font-semibold text-[#1a1a2e] tracking-tight leading-[1.1] mb-6 max-w-4xl">
