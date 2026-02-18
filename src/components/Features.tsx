@@ -13,26 +13,33 @@ export default function Features() {
                             <Icon icon="solar:cart-large-linear" width="24" strokeWidth="1.5" />
                         </div>
                         <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-6">
-                            Vende mientras duermes.
+                            Dos agentes, un objetivo: <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Más Clientes.</span>
                         </h2>
                         <p className="text-lg text-slate-400 leading-relaxed mb-8">
-                            No pierdas clientes por llamar fuera de horario. Nuestra IA atiende dudas, ofrece productos y cierra ventas en cualquier momento del día.
+                            Tanto en tu línea telefónica como en tu página web, asegúrate de que cada interesado reciba la atención que necesita para convertirse en cliente.
                         </p>
 
-                        <ul className="space-y-4">
-                            <li className="flex items-center gap-3 text-slate-300">
-                                <Icon icon="solar:check-circle-bold" className="text-blue-500" width="20" />
-                                <span>Atención inmediata para compradores impulsivos.</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-slate-300">
-                                <Icon icon="solar:check-circle-bold" className="text-blue-500" width="20" />
-                                <span>Información precisa de tu catálogo 24/7.</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-slate-300">
-                                <Icon icon="solar:check-circle-bold" className="text-blue-500" width="20" />
-                                <span>Procesamiento de pagos seguro y rápido.</span>
-                            </li>
-                        </ul>
+                        <div className="space-y-8">
+                            <div>
+                                <h3 className="text-xl font-medium text-white mb-2 flex items-center gap-2">
+                                    <Icon icon="solar:phone-calling-linear" className="text-blue-400" width="24" />
+                                    Agente Telefónico
+                                </h3>
+                                <p className="text-slate-400 leading-relaxed text-sm">
+                                    Tu número de siempre, ahora inteligente. Contesta llamadas simultáneas, filtra spam y agenda reuniones automáticamente.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-xl font-medium text-white mb-2 flex items-center gap-2">
+                                    <Icon icon="solar:laptop-minimalistic-linear" className="text-purple-400" width="24" />
+                                    Agente Web
+                                </h3>
+                                <p className="text-slate-400 leading-relaxed text-sm">
+                                    Conversa con los visitantes de tu sitio. Resuelve dudas y captura datos de contacto 24/7, directo a tu CRM.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Visual (Phone Interface) */}

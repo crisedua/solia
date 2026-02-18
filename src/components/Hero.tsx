@@ -98,12 +98,12 @@ export default function Hero() {
 
                 {/* Headline */}
                 <h1 className="text-5xl md:text-7xl font-semibold text-white tracking-tight leading-[1.1] mb-6 max-w-4xl drop-shadow-2xl">
-                    Tus productos y servicios, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">disponibles 24/7.</span>
+                    Agentes de voz para tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">teléfono y sitio web.</span>
                 </h1>
 
                 {/* Subhead */}
                 <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed font-normal">
-                    Responde a tus clientes al instante y aumenta tus ventas. Agentes de voz inteligentes que aseguran que tu negocio nunca deje de vender.
+                    Atiende llamadas y visitas 24/7. Genera leads, agenda citas y resuelve dudas de forma natural. Sin esperas, sin perder clientes.
                 </p>
 
                 {/* CTA Buttons */}
@@ -130,11 +130,11 @@ export default function Hero() {
                                 <Icon icon="solar:check-circle-linear" width="18" />
                             </div>
                             <div>
-                                <div className="text-xs font-medium text-white">Venta Exitosa</div>
+                                <div className="text-xs font-medium text-white">Lead Capturado</div>
                                 <div className="text-[10px] text-slate-400">Hace 2 min • Web</div>
                             </div>
                         </div>
-                        <div className="text-xs text-slate-300">"Cliente completó la compra del Plan Premium anual."</div>
+                        <div className="text-xs text-slate-300">"Cliente dejó sus datos para cotización."</div>
                     </div>
 
                     <div className="absolute -right-12 top-1/4 glass-panel p-4 rounded-xl rotate-[3deg] z-0 hidden lg:block w-64 animate-float-delayed">
@@ -143,8 +143,8 @@ export default function Hero() {
                                 <Icon icon="solar:user-plus-linear" width="18" />
                             </div>
                             <div>
-                                <div className="text-xs font-medium text-white">Nuevo Lead Calificado</div>
-                                <div className="text-[10px] text-slate-400">CRM Actualizado</div>
+                                <div className="text-xs font-medium text-white">Datos Guardados</div>
+                                <div className="text-[10px] text-slate-400">Google Sheets / CRM</div>
                             </div>
                         </div>
                         <div className="space-y-1">

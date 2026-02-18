@@ -58,10 +58,10 @@ export default function Integrations() {
                             <Icon icon="solar:layers-minimalistic-linear" width="24" strokeWidth="1.5" />
                         </div>
                         <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-6">
-                            Ventas sincronizadas con tu CRM.
+                            Tu información donde la necesitas.
                         </h2>
                         <p className="text-lg text-slate-400 leading-relaxed mb-8">
-                            Cada venta realizada por la voz IA se registra automáticamente en tu CRM, actualiza el inventario y envía correos de confirmación al instante.
+                            Cada conversación se transcribe y se guardan los datos clave (nombre, intención, contacto) directamente en tu Google Sheets, HubSpot, Salesforce o cualquier CRM que uses.
                         </p>
                         <button className="text-white font-medium text-sm flex items-center gap-2 hover:gap-3 transition-all">
                             Ver todas las integraciones
