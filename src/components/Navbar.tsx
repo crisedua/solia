@@ -11,12 +11,7 @@ export default function Navbar() {
           <span className="text-sm font-semibold tracking-tight text-[#1a1a2e]">Sol-IA</span>
         </div>
 
-        <div className="hidden md:flex items-center gap-8 text-xs font-medium text-[#6b7280]">
-          <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Características</a>
-          <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">Demo en vivo</a>
-          <a href="#integrations" className="hover:text-[#1a1a2e] transition-colors">Integraciones</a>
-          <a href="#contact" className="hover:text-[#1a1a2e] transition-colors">Contacto</a>
-        </div>
+
 
         <div className="flex items-center gap-4">
           <a href="/admin/login" className="hidden md:block text-xs font-medium text-[#6b7280] hover:text-[#1a1a2e] transition-colors">Admin</a>

@@ -15,12 +15,7 @@ export default function Footer() {
                     </div>
 
                     <div className="flex gap-12 md:gap-24">
-                        <div className="flex flex-col gap-4">
-                            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Producto</h4>
-                            <a href="#" className="text-xs text-slate-400 hover:text-white transition-colors">Características</a>
-                            <a href="#" className="text-xs text-slate-400 hover:text-white transition-colors">Integraciones</a>
-                            <a href="#" className="text-xs text-slate-400 hover:text-white transition-colors">Demo</a>
-                        </div>
+
                         <div className="flex flex-col gap-4">
                             <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Compañía</h4>
                             <a href="#" className="text-xs text-slate-400 hover:text-white transition-colors">Nosotros</a>
