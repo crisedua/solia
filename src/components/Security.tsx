@@ -28,9 +28,8 @@ export default function Security() {
                     La privacidad es nuestra prioridad. Todas las conversaciones y datos de clientes están encriptados bajo los más altos estándares.
                 </p>
 
-                <button className="bg-[#5B5BD6] hover:bg-[#4a4ac4] text-white text-sm font-bold px-8 py-3 rounded-full transition-colors inline-flex items-center gap-2 shadow-md shadow-[#5B5BD6]/20">
+                <button className="bg-[#5B5BD6] hover:bg-[#4a4ac4] text-white text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-md shadow-[#5B5BD6]/20">
                     Leer política de seguridad
-                    <Icon icon="solar:arrow-right-linear" width="16" />
                 </button>
             </div>
 

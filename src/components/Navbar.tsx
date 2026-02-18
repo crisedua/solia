@@ -20,9 +20,8 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <a href="/admin/login" className="hidden md:block text-xs font-medium text-[#6b7280] hover:text-[#1a1a2e] transition-colors">Admin</a>
-          <button className="bg-[#5B5BD6] hover:bg-[#4a4ac4] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors flex items-center gap-2 shadow-sm shadow-[#5B5BD6]/20">
+          <button className="bg-[#5B5BD6] hover:bg-[#4a4ac4] text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shadow-sm shadow-[#5B5BD6]/20">
             Agendar demo
-            <Icon icon="solar:arrow-right-linear" width="14" />
           </button>
         </div>
       </div>

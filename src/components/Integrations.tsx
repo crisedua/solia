@@ -63,9 +63,8 @@ export default function Integrations() {
                         <p className="text-lg text-[#6b7280] leading-relaxed mb-8">
                             Cada conversación se transcribe y se guardan los datos clave (nombre, intención, contacto) directamente en tu Google Sheets, HubSpot, Salesforce o cualquier CRM que uses.
                         </p>
-                        <button className="text-[#5B5BD6] font-medium text-sm flex items-center gap-2 hover:gap-3 transition-all">
+                        <button className="text-[#5B5BD6] font-medium text-sm">
                             Ver todas las integraciones
-                            <Icon icon="solar:arrow-right-linear" width="16" />
                         </button>
                     </div>
 

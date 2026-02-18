@@ -1,4 +1,3 @@
-import { Icon } from '@iconify/react';
 import React from 'react';
 
 export default function Hero() {
@@ -110,152 +109,17 @@ export default function Hero() {
                 <div className="flex flex-col md:flex-row items-center gap-4 mb-20">
                     <button
                         onClick={startConversation}
-                        className="h-12 px-8 rounded-full bg-[#5B5BD6] text-white text-sm font-semibold hover:bg-[#4a4ac4] transition-colors duration-200 shadow-md shadow-[#5B5BD6]/30 flex items-center gap-2">
-                        <Icon icon="solar:phone-calling-linear" width="18" strokeWidth="1.5" />
+                        className="h-12 px-8 rounded-full bg-[#5B5BD6] text-white text-sm font-semibold hover:bg-[#4a4ac4] transition-colors duration-200 shadow-md shadow-[#5B5BD6]/30">
                         Escuchar Demo
                     </button>
-                    <button className="h-12 px-8 rounded-full bg-white border border-[#e8e8f0] text-[#1a1a2e] text-sm font-medium hover:border-[#5B5BD6]/30 transition-colors flex items-center gap-2">
+                    <button className="h-12 px-8 rounded-full bg-white border border-[#e8e8f0] text-[#1a1a2e] text-sm font-medium hover:border-[#5B5BD6]/30 transition-colors">
                         Ver integraciones
-                        <Icon icon="solar:alt-arrow-right-linear" width="16" strokeWidth="1.5" />
                     </button>
                 </div>
 
-                {/* Hero Visual (Interactive Dashboard Simulation) */}
-                <div className="relative w-full max-w-5xl mx-auto perspective-1000">
-
-                    {/* Floating Decorative Elements */}
-                    <div className="absolute -left-12 top-1/3 glass-panel p-4 rounded-xl rotate-[-6deg] z-0 hidden lg:block w-64 animate-float">
-                        <div className="flex items-center gap-3 mb-3 border-b border-[#e8e8f0] pb-2">
-                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                                <Icon icon="solar:check-circle-linear" width="18" />
-                            </div>
-                            <div>
-                                <div className="text-xs font-medium text-[#1a1a2e]">Lead Capturado</div>
-                                <div className="text-[10px] text-[#6b7280]">Hace 2 min • Web</div>
-                            </div>
-                        </div>
-                        <div className="text-xs text-[#374151]">"Cliente dejó sus datos para cotización."</div>
-                    </div>
-
-                    <div className="absolute -right-12 top-1/4 glass-panel p-4 rounded-xl rotate-[3deg] z-0 hidden lg:block w-64 animate-float-delayed">
-                        <div className="flex items-center gap-3 mb-3 border-b border-[#e8e8f0] pb-2">
-                            <div className="w-8 h-8 rounded-full bg-[#ededfc] flex items-center justify-center text-[#5B5BD6]">
-                                <Icon icon="solar:user-plus-linear" width="18" />
-                            </div>
-                            <div>
-                                <div className="text-xs font-medium text-[#1a1a2e]">Datos Guardados</div>
-                                <div className="text-[10px] text-[#6b7280]">Google Sheets / CRM</div>
-                            </div>
-                        </div>
-                        <div className="space-y-1">
-                            <div className="h-1.5 w-full bg-[#e8e8f0] rounded-full"></div>
-                            <div className="h-1.5 w-2/3 bg-[#e8e8f0] rounded-full"></div>
-                        </div>
-                    </div>
-
-                    {/* Main Interface */}
-                    <div className="glass-card-dark rounded-xl overflow-hidden relative z-10">
-                        {/* Window Controls */}
-                        <div className="h-10 bg-[#f0f0fa] border-b border-[#e8e8f0] flex items-center px-4 gap-2">
-                            <div className="flex gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-[#d1d1e0]"></div>
-                                <div className="w-3 h-3 rounded-full bg-[#d1d1e0]"></div>
-                                <div className="w-3 h-3 rounded-full bg-[#d1d1e0]"></div>
-                            </div>
-                            <div className="ml-auto flex items-center gap-2 text-[10px] text-[#6b7280] font-medium px-2 py-1 rounded bg-[#ededfc]">
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                Atención en Vivo
-                            </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-12 min-h-[500px]">
-                            {/* Sidebar */}
-                            <div className="md:col-span-3 bg-[#f8f8fc] border-r border-[#e8e8f0] p-4 hidden md:flex flex-col gap-4">
-                                <div className="text-[10px] uppercase tracking-wider text-[#9ca3af] font-semibold mb-2">Actividad Reciente</div>
-
-                                {/* Call Item Active */}
-                                <div className="p-3 rounded-lg bg-[#ededfc] border border-[#5B5BD6]/20 cursor-pointer">
-                                    <div className="flex justify-between mb-1">
-                                        <span className="text-xs font-medium text-[#1a1a2e]">+34 912 34...</span>
-                                        <span className="text-[10px] text-[#5B5BD6]">En curso</span>
-                                    </div>
-                                    <div className="text-[10px] text-[#6b7280]">Intención: Agendar Cita</div>
-                                </div>
-
-                                {/* Call Item */}
-                                <div className="p-3 rounded-lg hover:bg-[#f0f0fa] transition-colors cursor-pointer border border-transparent">
-                                    <div className="flex justify-between mb-1">
-                                        <span className="text-xs font-medium text-[#374151]">Web Visitor</span>
-                                        <span className="text-[10px] text-[#9ca3af]">2m</span>
-                                    </div>
-                                    <div className="text-[10px] text-[#9ca3af]">Consulta de Horarios</div>
-                                </div>
-
-                                {/* Call Item */}
-                                <div className="p-3 rounded-lg hover:bg-[#f0f0fa] transition-colors cursor-pointer border border-transparent">
-                                    <div className="flex justify-between mb-1">
-                                        <span className="text-xs font-medium text-[#374151]">+56 9 980...</span>
-                                        <span className="text-[10px] text-[#9ca3af]">15m</span>
-                                    </div>
-                                    <div className="text-[10px] text-[#9ca3af]">Cita Confirmada (SMS)</div>
-                                </div>
-                            </div>
-
-                            {/* Main Call Visualization */}
-                            <div className="md:col-span-9 bg-white relative flex flex-col">
-
-                                {/* Waveform Visualization Area */}
-                                <div className="flex-1 flex flex-col items-center justify-center p-8 border-b border-[#e8e8f0] relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-b from-[#5B5BD6]/5 to-transparent"></div>
-
-                                    {/* Central Avatar */}
-                                    <div className="relative w-24 h-24 mb-8">
-                                        <div className="absolute inset-0 bg-[#5B5BD6] rounded-full animate-pulse-ring"></div>
-                                        <div className="absolute inset-2 bg-[#7c7ce8] rounded-full animate-pulse-ring" style={{ animationDelay: '0.5s' }}></div>
-                                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5B5BD6] to-[#7c7ce8] flex items-center justify-center shadow-xl shadow-[#5B5BD6]/30 z-10">
-                                            <Icon icon="solar:microphone-3-linear" width="32" className="text-white" />
-                                        </div>
-                                    </div>
-
-                                    {/* Live Transcript */}
-                                    <div className="w-full max-w-md space-y-4">
-                                        <div className="flex gap-3 animate-fade-in-up">
-                                            <div className="text-[10px] font-bold text-[#9ca3af] mt-1 uppercase">Cliente</div>
-                                            <p className="text-sm text-[#374151] leading-relaxed bg-[#f8f8fc] p-3 rounded-2xl rounded-tl-none border border-[#e8e8f0]">
-                                                Hola, quería saber si tienen disponibilidad para una limpieza dental mañana por la tarde.
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-3 flex-row-reverse animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-                                            <div className="text-[10px] font-bold text-[#5B5BD6] mt-1 uppercase">AI</div>
-                                            <p className="text-sm text-white leading-relaxed bg-[#5B5BD6] p-3 rounded-2xl rounded-tr-none shadow-lg shadow-[#5B5BD6]/20">
-                                                ¡Hola! Sí, tenemos un espacio disponible a las 4:00 PM. ¿Te gustaría que reservemos ese horario para ti? Solo necesito tu nombre.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Action Bar */}
-                                <div className="h-16 bg-[#f8f8fc] border-t border-[#e8e8f0] flex items-center px-6 justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-2 w-24 bg-[#e8e8f0] rounded-full overflow-hidden">
-                                            <div className="h-full w-full bg-[#5B5BD6] rounded-full"></div>
-                                        </div>
-                                        <span className="text-xs text-[#6b7280]">Intencionalidad: Agendar</span>
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button className="p-2 hover:bg-[#f0f0fa] rounded-full text-[#9ca3af] transition-colors"><Icon icon="solar:pause-linear" width="20" /></button>
-                                        <button className="p-2 hover:bg-[#f0f0fa] rounded-full text-[#9ca3af] transition-colors"><Icon icon="solar:settings-linear" width="20" /></button>
-                                        <button className="px-3 py-1.5 bg-[#ededfc] text-[#5B5BD6] border border-[#5B5BD6]/20 rounded-md text-xs font-medium hover:bg-[#5B5BD6]/20 transition-colors">Ver Agenda</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            {/* Bottom Fade */}
-            <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-[#f8f8fc] to-transparent z-20 pointer-events-none"></div>
         </main>
     );
 }
+
