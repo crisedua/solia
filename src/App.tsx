@@ -8,6 +8,8 @@ import Footer from './components/Footer';
 
 import { useEffect } from 'react';
 
+const ElevenLabsWidget = 'elevenlabs-convai' as any;
+
 function App() {
   useEffect(() => {
     const script = document.createElement('script');
@@ -30,7 +32,7 @@ function App() {
       <GridFeatures />
       <Security />
       <Footer />
-      <elevenlabs-convai agent-id="agent_0701khrvqrkbetnv0jfpc9tx6a9j"></elevenlabs-convai>
+      <ElevenLabsWidget agent-id="agent_0701khrvqrkbetnv0jfpc9tx6a9j" />
     </div>
   );
 }
