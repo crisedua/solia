@@ -32,7 +32,7 @@ function App() {
       <GridFeatures />
       <Security />
       <Footer />
-      <ElevenLabsWidget agent-id="agent_0701khrvqrkbetnv0jfpc9tx6a9j" />
+      <ElevenLabsWidget agent-id="agent_0701khrvqrkbetnv0jfpc9tx6a9j" variant="compact" />
     </div>
   );
 }
