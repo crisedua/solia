@@ -1,6 +1,6 @@
 export default function Pricing() {
     return (
-        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <section id="precios" className="py-20 bg-gradient-to-b from-white to-gray-50">
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -30,7 +30,7 @@ export default function Pricing() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-[#6b7280] line-through">Instalación: $150.000</span>
-                                <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">¡GRATIS!</span>
+                                <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">¡SIN COSTO!</span>
                             </div>
                         </div>
 

@@ -16,6 +16,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
+            <a href="#precios" className="hidden md:block text-xs font-medium text-[#6b7280] hover:text-[#1a1a2e] transition-colors">Precios</a>
             <a href="/admin/login" className="hidden md:block text-xs font-medium text-[#6b7280] hover:text-[#1a1a2e] transition-colors">Admin</a>
             <button
               onClick={() => setIsContactOpen(true)}
