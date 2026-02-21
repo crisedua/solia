@@ -3,6 +3,7 @@ import Hero from './components/Hero';
 import Features from './components/Features';
 import Integrations from './components/Integrations';
 import GridFeatures from './components/GridFeatures';
+import Pricing from './components/Pricing';
 import Security from './components/Security';
 import Footer from './components/Footer';
 
@@ -30,6 +31,7 @@ function App() {
       <Features />
       <Integrations />
       <GridFeatures />
+      <Pricing />
       <Security />
       <Footer />
       <ElevenLabsWidget agent-id="agent_0701khrvqrkbetnv0jfpc9tx6a9j" variant="compact" />
