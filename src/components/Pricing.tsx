@@ -1,13 +1,53 @@
+import { useState } from 'react';
+
 export default function Pricing() {
+    const [showForm, setShowForm] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState('');
+    const [formData, setFormData] = useState({
+        fullName: '',
+        company: '',
+        email: '',
+        phone: '',
+        plan: ''
+    });
+    const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    const openForm = (plan: string) => {
+        setSelectedPlan(plan);
+        setFormData({ ...formData, plan });
+        setShowForm(true);
+        setSubmitted(false);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setSubmitted(true);
+        setSubmitting(false);
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+            setShowForm(false);
+            setFormData({ fullName: '', company: '', email: '', phone: '', plan: '' });
+            setSubmitted(false);
+        }, 3000);
+    };
+
     return (
+        <>
         <section id="precios" className="py-20 bg-gradient-to-b from-white to-gray-50">
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold text-[#1a1a2e] mb-4">
+                    <h2 className="text-5xl md:text-6xl font-bold text-[#1a1a2e] mb-6">
                         Precios
                     </h2>
-                    <p className="text-lg text-[#6b7280] max-w-2xl mx-auto">
+                    <p className="text-xl text-[#6b7280] max-w-2xl mx-auto">
                         Elige el plan que mejor se adapte a tu negocio
                     </p>
                 </div>
@@ -56,7 +96,9 @@ export default function Pricing() {
                             </li>
                         </ul>
 
-                        <button className="w-full py-3 px-6 rounded-lg bg-white border-2 border-[#5B5BD6] text-[#5B5BD6] font-semibold hover:bg-[#5B5BD6] hover:text-white transition-colors">
+                        <button 
+                            onClick={() => openForm('Plan Pro')}
+                            className="w-full py-3 px-6 rounded-lg bg-white border-2 border-[#5B5BD6] text-[#5B5BD6] font-semibold hover:bg-[#5B5BD6] hover:text-white transition-colors">
                             Comenzar
                         </button>
                     </div>
@@ -120,7 +162,9 @@ export default function Pricing() {
                             </li>
                         </ul>
 
-                        <button className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-[#5B5BD6] to-[#7c7ce8] text-white font-semibold hover:shadow-lg hover:scale-[1.02] transition-all">
+                        <button 
+                            onClick={() => openForm('Plan Elite')}
+                            className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-[#5B5BD6] to-[#7c7ce8] text-white font-semibold hover:shadow-lg hover:scale-[1.02] transition-all">
                             Comenzar Ahora
                         </button>
                     </div>
@@ -128,5 +172,124 @@ export default function Pricing() {
                 </div>
             </div>
         </section>
+
+        {/* Contact Form Modal */}
+        {showForm && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !submitted && setShowForm(false)}></div>
+                <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in-up">
+                    {!submitted ? (
+                        <>
+                            <button
+                                onClick={() => setShowForm(false)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#5B5BD6] to-[#7c7ce8] flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-2xl font-bold text-[#1a1a2e] mb-2">{selectedPlan}</h3>
+                                <p className="text-sm text-[#6b7280]">Completa tus datos y te contactaremos pronto</p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-[#1a1a2e] mb-1.5">Nombre Completo *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.fullName}
+                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#5B5BD6] focus:ring-2 focus:ring-[#5B5BD6]/20 outline-none transition-all"
+                                        placeholder="Juan Pérez"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-[#1a1a2e] mb-1.5">Empresa *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.company}
+                                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#5B5BD6] focus:ring-2 focus:ring-[#5B5BD6]/20 outline-none transition-all"
+                                        placeholder="Mi Empresa S.A."
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-[#1a1a2e] mb-1.5">Email *</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#5B5BD6] focus:ring-2 focus:ring-[#5B5BD6]/20 outline-none transition-all"
+                                        placeholder="juan@empresa.com"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-[#1a1a2e] mb-1.5">Teléfono *</label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#5B5BD6] focus:ring-2 focus:ring-[#5B5BD6]/20 outline-none transition-all"
+                                        placeholder="+56 9 1234 5678"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-[#1a1a2e] mb-1.5">Plan *</label>
+                                    <select
+                                        required
+                                        value={formData.plan}
+                                        onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#5B5BD6] focus:ring-2 focus:ring-[#5B5BD6]/20 outline-none transition-all"
+                                    >
+                                        <option value="">Seleccionar plan</option>
+                                        <option value="Plan Pro">Plan Pro - $25.000/mes</option>
+                                        <option value="Plan Elite">Plan Elite - $45.000/mes</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-[#5B5BD6] to-[#7c7ce8] text-white font-semibold hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? 'Enviando...' : 'Enviar Solicitud'}
+                                </button>
+                            </form>
+                        </>
+                    ) : (
+                        <div className="text-center py-8">
+                            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-bold text-[#1a1a2e] mb-2">¡Solicitud Enviada!</h3>
+                            <p className="text-[#6b7280] mb-4">
+                                Gracias por tu interés. Te contactaremos en las próximas 24 horas.
+                            </p>
+                            <p className="text-sm text-[#6b7280]">
+                                Revisa tu email para más información.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+        </>
     );
 }
