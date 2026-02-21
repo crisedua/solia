@@ -26,7 +26,7 @@ export default function Features() {
                                     Agente Telefónico
                                 </h3>
                                 <p className="text-[#6b7280] leading-relaxed text-sm">
-                                    Tu número de siempre, ahora inteligente. Contesta llamadas simultáneas, filtra spam y agenda reuniones automáticamente.
+                                    Se te asigna un número 600 para atender a tus clientes 24/7. Contesta llamadas simultáneas, filtra spam y agenda reuniones automáticamente.
                                 </p>
                             </div>
 
