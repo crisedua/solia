@@ -23,10 +23,18 @@ interface Agent {
   platform: 'vapi' | 'elevenlabs';
 }
 
+interface Demo {
+  id: string;
+  name: string;
+  agentId: string;
+  createdAt: number;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [demos, setDemos] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -43,6 +51,12 @@ export default function AdminDashboard() {
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState('');
 
+  // Demo form
+  const [showDemoForm, setShowDemoForm] = useState(false);
+  const [demoName, setDemoName] = useState('');
+  const [demoAgentId, setDemoAgentId] = useState('');
+  const [creatingDemo, setCreatingDemo] = useState(false);
+
   // Copy state
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -56,9 +70,10 @@ export default function AdminDashboard() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [clientsRes, elevenLabsAgentsRes] = await Promise.all([
+      const [clientsRes, elevenLabsAgentsRes, demosRes] = await Promise.all([
         fetch('/api/clients?action=list', { headers: { 'x-admin-key': adminKey! } }),
         fetch('/api/elevenlabs-agents?action=list', { headers: { 'x-admin-key': adminKey! } }),
+        fetch('/api/demos?action=list', { headers: { 'x-admin-key': adminKey! } }),
       ]);
 
       if (clientsRes.status === 401) {
@@ -75,6 +90,12 @@ export default function AdminDashboard() {
         const elevenData = await elevenLabsAgentsRes.json();
         setAgents(Array.isArray(elevenData) ? elevenData : []);
       }
+
+      // Demos
+      if (demosRes.ok) {
+        const demosData = await demosRes.json();
+        setDemos(Array.isArray(demosData) ? demosData : []);
+      }
     } catch (err) {
       setError(`Error cargando datos: ${err}`);
     } finally {
@@ -89,10 +110,10 @@ export default function AdminDashboard() {
       const res = await fetch('/api/clients?action=create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
-        body: JSON.stringify({ 
-          name: formName, 
-          business: formBusiness, 
-          email: formEmail, 
+        body: JSON.stringify({
+          name: formName,
+          business: formBusiness,
+          email: formEmail,
           phone: formPhone,
           agentId: formAgentId || undefined,
         }),
@@ -143,6 +164,53 @@ export default function AdminDashboard() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const copyDemoLink = (demoId: string) => {
+    const url = `${window.location.origin}/demo/${demoId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(`demo-${demoId}`);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleCreateDemo = async () => {
+    if (!demoName.trim() || !demoAgentId) return;
+    setCreatingDemo(true);
+    try {
+      const res = await fetch('/api/demos?action=create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
+        body: JSON.stringify({ name: demoName, agentId: demoAgentId }),
+      });
+      if (res.ok) {
+        setDemoName(''); setDemoAgentId(''); setShowDemoForm(false);
+        fetchAll();
+      } else {
+        const data = await res.json();
+        setError(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      setError(`Error creando demo: ${err}`);
+    } finally {
+      setCreatingDemo(false);
+    }
+  };
+
+  const handleDeleteDemo = async (id: string) => {
+    try {
+      const res = await fetch('/api/demos?action=delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) fetchAll();
+      else {
+        const data = await res.json();
+        setError(`Error eliminando demo: ${data.error}`);
+      }
+    } catch (err) {
+      setError(`Error: ${err}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0b101b] text-slate-300">
       <header className="border-b border-white/5 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-50">
@@ -161,7 +229,7 @@ export default function AdminDashboard() {
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-8">
           <div className="rounded-xl bg-[#0f172a] border border-white/10 p-5">
             <p className="text-xs text-slate-500 uppercase tracking-wider">Clientes</p>
             <p className="text-2xl font-semibold text-white mt-1">{clients.length}</p>
@@ -177,6 +245,10 @@ export default function AdminDashboard() {
           <div className="rounded-xl bg-[#0f172a] border border-white/10 p-5">
             <p className="text-xs text-slate-500 uppercase tracking-wider">Agentes ElevenLabs</p>
             <p className="text-2xl font-semibold text-blue-400 mt-1">{agents.length}</p>
+          </div>
+          <div className="rounded-xl bg-[#0f172a] border border-white/10 p-5">
+            <p className="text-xs text-slate-500 uppercase tracking-wider">Demos</p>
+            <p className="text-2xl font-semibold text-purple-400 mt-1">{demos.length}</p>
           </div>
         </div>
 
@@ -220,6 +292,85 @@ export default function AdminDashboard() {
                     ) : (
                       <div className="mt-3 text-[11px] text-slate-500">Sin asignar</div>
                     )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Demos Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-white flex items-center gap-2">
+              <Icon icon="solar:play-circle-linear" width={18} className="text-purple-400" />
+              Demos para Leads
+            </h2>
+            <button onClick={() => setShowDemoForm(!showDemoForm)}
+              className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 transition-colors">
+              <Icon icon={showDemoForm ? 'solar:close-circle-linear' : 'solar:add-circle-linear'} width={16} />
+              {showDemoForm ? 'Cancelar' : 'Nueva Demo'}
+            </button>
+          </div>
+
+          {showDemoForm && (
+            <div className="rounded-xl bg-[#0f172a] border border-white/10 p-6 mb-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Nombre del Lead *</label>
+                  <input type="text" value={demoName} onChange={(e) => setDemoName(e.target.value)}
+                    placeholder="Clínica García, Restaurante La Mesa..."
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Agente ElevenLabs *</label>
+                  <select value={demoAgentId} onChange={(e) => setDemoAgentId(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50">
+                    <option value="">Seleccionar agente</option>
+                    {agents.map(a => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <button onClick={handleCreateDemo}
+                disabled={!demoName.trim() || !demoAgentId || creatingDemo}
+                className="px-6 py-2.5 rounded-lg bg-purple-500 text-white text-sm font-semibold hover:bg-purple-600 transition-colors disabled:opacity-40 flex items-center gap-2">
+                {creatingDemo && <Icon icon="solar:refresh-linear" width={14} className="animate-spin" />}
+                {creatingDemo ? 'Creando...' : 'Crear Demo'}
+              </button>
+            </div>
+          )}
+
+          {demos.length === 0 ? (
+            <div className="rounded-xl bg-[#0f172a] border border-white/10 p-6 text-center">
+              <p className="text-sm text-slate-400">No hay demos creadas. Crea una para compartir con leads.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {demos.map(demo => {
+                const agent = agents.find(a => a.id === demo.agentId);
+                return (
+                  <div key={demo.id} className="rounded-xl bg-[#0f172a] border border-white/10 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white">{demo.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        <Icon icon="solar:microphone-3-linear" width={11} className="inline mr-1" />
+                        {agent ? agent.name : demo.agentId.slice(0, 16) + '...'}
+                      </p>
+                      <p className="text-[10px] text-slate-600 mt-0.5">Creado {new Date(demo.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => copyDemoLink(demo.id)}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-purple-500/20 text-purple-400 hover:bg-purple-500/10 transition-colors">
+                        <Icon icon={copiedId === `demo-${demo.id}` ? 'solar:check-read-linear' : 'solar:copy-linear'} width={14} />
+                        {copiedId === `demo-${demo.id}` ? '¡Copiado!' : 'Copiar enlace'}
+                      </button>
+                      <button onClick={() => handleDeleteDemo(demo.id)}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors">
+                        <Icon icon="solar:trash-bin-minimalistic-linear" width={14} />
+                      </button>
+                    </div>
                   </div>
                 );
               })}

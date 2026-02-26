@@ -29,6 +29,10 @@
       "destination": "/api/elevenlabs-assign"
     },
     {
+      "source": "/api/demos",
+      "destination": "/api/demos"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
