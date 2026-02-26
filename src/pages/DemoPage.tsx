@@ -157,29 +157,10 @@ export default function DemoPage() {
                     </div>
                 )}
 
-                {/* Instructions */}
-                <div className="max-w-2xl mx-auto px-6 mt-8">
-                    <p className="text-lg text-[#6b7280] text-center mb-10">
+                <div className="max-w-2xl mx-auto px-6 mt-8 text-center">
+                    <p className="text-lg text-[#6b7280]">
                         Prueba cómo nuestro agente de voz atiende llamadas, responde preguntas y agenda reuniones. Haz clic en el botón de la esquina inferior derecha para comenzar.
                     </p>
-
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-[#e8e8f0]">
-                        <h3 className="font-semibold text-xl mb-4 text-[#1a1a2e]">Qué probar:</h3>
-                        <ul className="space-y-3 text-[#374151]">
-                            <li className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-[#ededfc] flex items-center justify-center text-[#5B5BD6] shrink-0 mt-0.5 text-sm font-semibold">1</div>
-                                <span>Pide información sobre los servicios y planes.</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-[#ededfc] flex items-center justify-center text-[#5B5BD6] shrink-0 mt-0.5 text-sm font-semibold">2</div>
-                                <span>Haz preguntas frecuentes como horario de atención o precios.</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <div className="w-6 h-6 rounded-full bg-[#ededfc] flex items-center justify-center text-[#5B5BD6] shrink-0 mt-0.5 text-sm font-semibold">3</div>
-                                <span>Intenta agendar una cita o reunión.</span>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             </main>
 
