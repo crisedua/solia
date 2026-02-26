@@ -32,6 +32,7 @@ export default async function handler(req, res) {
                 id: data.id,
                 name: data.name,
                 agentId: data.agent_id,
+                websiteUrl: data.website_url || null,
             });
         }
 
@@ -53,6 +54,7 @@ export default async function handler(req, res) {
                     id: d.id,
                     name: d.name,
                     agentId: d.agent_id,
+                    websiteUrl: d.website_url || null,
                     createdAt: d.created_at,
                 }))
             );
@@ -64,7 +66,7 @@ export default async function handler(req, res) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }
 
-            const { name, agentId } = req.body || {};
+            const { name, agentId, websiteUrl } = req.body || {};
             if (!name || !agentId) {
                 return res.status(400).json({ error: 'name and agentId required' });
             }
@@ -73,7 +75,7 @@ export default async function handler(req, res) {
 
             const { data, error } = await supabase
                 .from('demos')
-                .insert({ id, name, agent_id: agentId, created_at: Date.now() })
+                .insert({ id, name, agent_id: agentId, website_url: websiteUrl || null, created_at: Date.now() })
                 .select()
                 .single();
 
@@ -84,6 +86,7 @@ export default async function handler(req, res) {
                 id: data.id,
                 name: data.name,
                 agentId: data.agent_id,
+                websiteUrl: data.website_url || null,
                 demoUrl: `${baseUrl}/demo/${data.id}`,
             });
         }

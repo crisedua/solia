@@ -27,6 +27,7 @@ interface Demo {
   id: string;
   name: string;
   agentId: string;
+  websiteUrl: string | null;
   createdAt: number;
 }
 
@@ -55,6 +56,7 @@ export default function AdminDashboard() {
   const [showDemoForm, setShowDemoForm] = useState(false);
   const [demoName, setDemoName] = useState('');
   const [demoAgentId, setDemoAgentId] = useState('');
+  const [demoWebsiteUrl, setDemoWebsiteUrl] = useState('');
   const [creatingDemo, setCreatingDemo] = useState(false);
 
   // Copy state
@@ -178,10 +180,10 @@ export default function AdminDashboard() {
       const res = await fetch('/api/demos?action=create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey! },
-        body: JSON.stringify({ name: demoName, agentId: demoAgentId }),
+        body: JSON.stringify({ name: demoName, agentId: demoAgentId, websiteUrl: demoWebsiteUrl || undefined }),
       });
       if (res.ok) {
-        setDemoName(''); setDemoAgentId(''); setShowDemoForm(false);
+        setDemoName(''); setDemoAgentId(''); setDemoWebsiteUrl(''); setShowDemoForm(false);
         fetchAll();
       } else {
         const data = await res.json();
@@ -332,6 +334,13 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Website del Lead (opcional)</label>
+                  <input type="url" value={demoWebsiteUrl} onChange={(e) => setDemoWebsiteUrl(e.target.value)}
+                    placeholder="https://clinicagarcia.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50" />
+                  <p className="text-[10px] text-slate-600 mt-1">Se capturará una captura de pantalla automáticamente para mostrar en la página de demo.</p>
+                </div>
               </div>
               <button onClick={handleCreateDemo}
                 disabled={!demoName.trim() || !demoAgentId || creatingDemo}
@@ -341,6 +350,7 @@ export default function AdminDashboard() {
               </button>
             </div>
           )}
+
 
           {demos.length === 0 ? (
             <div className="rounded-xl bg-[#0f172a] border border-white/10 p-6 text-center">
