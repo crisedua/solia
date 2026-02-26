@@ -1,4 +1,4 @@
-import { upsertClient, getClient } from './lib/store.js';
+import { upsertClient, getClient } from '../lib/store.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -31,18 +31,18 @@ export default async function handler(req, res) {
 
     // Just assign the existing ElevenLabs agent ID
     // The agent's tools will use clientId from the URL parameter
-    const updated = await upsertClient(clientId, { 
-      agentId, 
-      agentName: `${client.business} - Vista Costa` 
+    const updated = await upsertClient(clientId, {
+      agentId,
+      agentName: `${client.business} - Vista Costa`
     });
 
-    return res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       agentId,
       agentName: `${client.business} - Vista Costa`,
       client: updated,
-      message: 'Agent assigned. Configure tools in ElevenLabs dashboard to point to: ' + 
-               `${process.env.APP_BASE_URL || 'https://solia-theta.vercel.app'}/api/calendar/${clientId}?action=saveCaller`
+      message: 'Agent assigned. Configure tools in ElevenLabs dashboard to point to: ' +
+        `${process.env.APP_BASE_URL || 'https://solia-theta.vercel.app'}/api/calendar/${clientId}?action=saveCaller`
     });
   } catch (err) {
     console.error('[ElevenLabs Assign] Error:', err);

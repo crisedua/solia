@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
-import { getClient, upsertClient } from '../lib/store.js';
-import { createOAuth2Client } from '../lib/google.js';
+import { getClient, upsertClient } from '../../lib/store.js';
+import { createOAuth2Client } from '../../lib/google.js';
 
 /**
  * Extract parameters and toolCallId from VAPI tool call or direct request.
@@ -159,7 +159,7 @@ async function handleAvailability(req, res, oauth2Client, clientId) {
         const isBusy = busySlots.some((b) => current < new Date(b.end) && next > new Date(b.start));
         if (!isBusy) {
           // Format as HH:MM in Chile time
-            availableSlots.push(current.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Santiago' }));
+          availableSlots.push(current.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Santiago' }));
         }
         current = next;
       }
@@ -175,28 +175,28 @@ async function handleAvailability(req, res, oauth2Client, clientId) {
   if (Object.keys(allAvailability).length === 0) {
     return res.json(vapiResponse(`No hay horarios disponibles en las fechas consultadas.`, toolCallId, toolName));
   }
-  
+
   // Format with day names for better agent understanding
   const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   let responseText = 'Horarios disponibles:\n';
   for (const [dateStr, slots] of Object.entries(allAvailability)) {
     const [year, month, day] = dateStr.split('-').map(Number);
     const date = new Date(year, month - 1, day);
     const dayName = dayNames[date.getDay()];
-    
+
     // Calculate relative day
     const diffDays = Math.round((date - today) / (1000 * 60 * 60 * 24));
     let relativeDay = '';
     if (diffDays === 0) relativeDay = 'HOY';
     else if (diffDays === 1) relativeDay = 'MAÑANA';
     else relativeDay = dayName.toUpperCase();
-    
+
     responseText += `${relativeDay} (${dateStr}): ${slots.join(', ')}\n`;
   }
-  
+
   return res.json(vapiResponse(responseText, toolCallId, toolName));
 }
 

@@ -1,12 +1,12 @@
 import { google } from 'googleapis';
-import { createOAuth2Client } from './lib/google.js';
-import { upsertClient, getClient } from './lib/store.js';
-import { createAgentForClient } from './lib/vapi.js';
+import { createOAuth2Client } from '../lib/google.js';
+import { upsertClient, getClient } from '../lib/store.js';
+import { createAgentForClient } from '../lib/vapi.js';
 
 export default async function handler(req, res) {
   const { code, state } = req.query;
   let stateData = {};
-  try { stateData = JSON.parse(state || '{}'); } catch (_) {}
+  try { stateData = JSON.parse(state || '{}'); } catch (_) { }
 
   const clientId = stateData.clientId;
   if (!clientId) return res.status(400).send('Missing client identifier');
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     try {
       const userInfo = await oauth2.userinfo.get();
       email = userInfo.data.email || 'unknown';
-    } catch (_) {}
+    } catch (_) { }
 
     await upsertClient(clientId, {
       tokens,

@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
-import { getClient, upsertClient } from './lib/store.js';
-import { createOAuth2Client } from './lib/google.js';
+import { getClient, upsertClient } from '../lib/store.js';
+import { createOAuth2Client } from '../lib/google.js';
 
 const SHEET_NAME = 'Sol-IA Llamadas';
 const HEADERS = ['Fecha', 'Hora', 'Nombre', 'Email', 'Teléfono', 'Tipo', 'Notas'];
@@ -13,7 +13,7 @@ async function getOrCreateSheet(auth, client) {
     try {
       await sheets.spreadsheets.get({ spreadsheetId: sheetId });
       return sheetId;
-    } catch (_) {}
+    } catch (_) { }
   }
 
   const spreadsheet = await sheets.spreadsheets.create({
@@ -62,15 +62,15 @@ async function appendToSheet(auth, client, data) {
 function extractContactInfo(transcript) {
   const text = transcript.toLowerCase();
   const info = { caller_name: '', caller_email: '', caller_phone: '', notes: '' };
-  
+
   // Extract email
   const emailMatch = transcript.match(/[\w\.-]+@[\w\.-]+\.\w+/);
   if (emailMatch) info.caller_email = emailMatch[0];
-  
+
   // Extract phone (Chilean format)
   const phoneMatch = transcript.match(/\+?56\s?9?\s?\d{4}\s?\d{4}|\d{9}/);
   if (phoneMatch) info.caller_phone = phoneMatch[0].replace(/\s/g, '');
-  
+
   // Extract property preferences for notes
   const preferences = [];
   if (text.includes('casa')) preferences.push('casa');
@@ -82,9 +82,9 @@ function extractContactInfo(transcript) {
   if (text.includes('quintero')) preferences.push('Quintero');
   if (text.includes('viña')) preferences.push('Viña del Mar');
   if (text.includes('frente al mar') || text.includes('vista al mar')) preferences.push('frente al mar');
-  
+
   info.notes = preferences.join(', ');
-  
+
   return info;
 }
 
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
 
   try {
     const { transcript, agent_id } = req.body;
-    
+
     if (!transcript) {
       return res.status(400).json({ error: 'No transcript provided' });
     }
@@ -106,7 +106,7 @@ export default async function handler(req, res) {
     // Get client (using the test client for now)
     const clientId = 'fa78Rv45yUXstIA9';
     const client = await getClient(clientId);
-    
+
     if (!client || !client.tokens) {
       console.error('[ElevenLabs Webhook] Client not found or no tokens');
       return res.status(200).json({ message: 'Client not configured' });
@@ -114,14 +114,14 @@ export default async function handler(req, res) {
 
     // Extract contact info from transcript
     const contactInfo = extractContactInfo(transcript);
-    
+
     // Try to extract name from transcript (look for "mi nombre es" or similar)
     const namePatterns = [
       /mi nombre es ([a-záéíóúñ\s]+)/i,
       /me llamo ([a-záéíóúñ\s]+)/i,
       /soy ([a-záéíóúñ\s]+)/i,
     ];
-    
+
     for (const pattern of namePatterns) {
       const match = transcript.match(pattern);
       if (match) {

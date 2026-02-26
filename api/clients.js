@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { getAllClients, getClient, upsertClient } from './lib/store.js';
+import { getAllClients, getClient, upsertClient } from '../lib/store.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 
       const clientId = crypto.randomBytes(12).toString('base64url');
       const baseUrl = process.env.APP_BASE_URL || 'https://solia-theta.vercel.app';
-      
+
       // Find agent name if agentId provided
       let agentName = null;
       if (agentId) {
@@ -64,11 +64,11 @@ export default async function handler(req, res) {
           console.error('Failed to fetch agent name:', e);
         }
       }
-      
+
       const client = await upsertClient(clientId, {
         id: clientId, name, business, email: email || '', phone: phone || '',
-        createdAt: Date.now(), 
-        agentId: agentId || null, 
+        createdAt: Date.now(),
+        agentId: agentId || null,
         agentName: agentName || null,
         calendarConnected: false, tokens: null, connectedEmail: null, connectedAt: null,
       });

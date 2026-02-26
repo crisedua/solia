@@ -1,5 +1,5 @@
-import { getClient } from '../lib/store.js';
-import { createOAuth2Client, SCOPES } from '../lib/google.js';
+import { getClient } from '../../lib/store.js';
+import { createOAuth2Client, SCOPES } from '../../lib/google.js';
 
 export default async function handler(req, res) {
   try {
