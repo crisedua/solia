@@ -43,7 +43,7 @@ export default function DemoPage() {
                 // Fetch screenshot if websiteUrl exists
                 if (data.websiteUrl) {
                     setScreenshotLoading(true);
-                    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(data.websiteUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+                    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(data.websiteUrl)}&screenshot=true&meta=false`;
                     fetch(apiUrl)
                         .then(r => r.json())
                         .then(result => {
